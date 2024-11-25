@@ -1,0 +1,23 @@
+@startuml Classes
+
+class Map {}
+
+class Coordinate {}
+
+class Entity {}
+
+class Unit {}
+
+class Villager {}
+
+class Building {}
+
+class TownCenter {}
+
+class Resource {}
+
+class Wood {}
+
+class Food {}
+
+class Gold {}
