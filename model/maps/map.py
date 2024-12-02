@@ -1,26 +1,27 @@
 from collections import defaultdict
-from model.coordinate import Coordinate
+from model.maps.coordinate import Coordinate
+from model.other.entity import Entity
 
 """
 This file contains the Map class which is used to represent the map of the game and the methods associated with it.
 """
 class Map():
     """Used to represent the map of the game."""
-    def __init__(self, width, heigth):
+    def __init__(self, width, height):
         self.__width = width
-        self.__heigth = heigth
+        self.__height = height
         self.__matrix = defaultdict( lambda: None )
     
     """Method to get the entity at a certain coordinate"""
-    def get_entity(self, coordinate):
+    def get_entity(self, coordinate: Coordinate):
         return self.__matrix[coordinate]
     
     """Utilitiy functions, later to move to controller"""
-    def add_entity(self, entity, coordinate):
+    def add_entity(self, entity: Entity, coordinate: Coordinate):
         self.__matrix[coordinate]= entity
 
     """Method to remove the entity at a certain coordinate"""
-    def remove_entity(self, coordinate):
+    def remove_entity(self, coordinate: Coordinate):
         self.__matrix[coordinate] = None
     
     """Testing functions"""
@@ -45,12 +46,14 @@ class Map():
     
     """Method to print the matrix of the map"""
     def __str__(self):
+        rows = []
         for i in range(self.__width):
             row = ""
-            for j in range(self.heigth):
+            for j in range(self.height):
                 entity = self.__matrix[Coordinate(i, j)]
                 if entity is None:
                     row += ". "
                 else:
                     row += f"{entity} "
-            print(row)
+            rows.append(row.strip())
+        return "\n".join(rows)
