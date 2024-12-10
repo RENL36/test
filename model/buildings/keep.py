@@ -10,7 +10,8 @@ class Keep(Building):
             size=(1, 1),
             health=800,
             max_health=800,
-            position=position
+            position=position,
+            image_path=""" image associé """
         )
         self.attack = 5
         self.range = 8

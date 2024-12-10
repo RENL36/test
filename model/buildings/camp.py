@@ -10,7 +10,8 @@ class Camp(Building):
             size=(2, 2),
             health=200,
             max_health=200,
-            position=position
+            position=position,
+            image_path=""" image associé"""
         )
 
     def drop_resources(self, resource_type, amount):

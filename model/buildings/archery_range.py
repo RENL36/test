@@ -10,7 +10,9 @@ class ArcheryRange(Building):
             size=(3, 3),
             health=500,
             max_health=500,
-            position=position
+            position=position,
+            image_path=""
+
         )
 
     def spawn_archer(self):

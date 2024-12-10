@@ -31,7 +31,7 @@ class Coordinate:
     def __eq__(self, other) -> bool:
         if not isinstance(other, Coordinate):
             return False
-        return self.x == other.get_x() and self.y == other.get_y()
+        return self.__x == other.get_x() and self.__y == other.get_y()
     
     """String representation of the coordinates"""
     def __str__(self) -> str:

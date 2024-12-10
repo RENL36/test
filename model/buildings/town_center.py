@@ -10,7 +10,8 @@ class TownCenter(Building):
             size=(4, 4),
             health=1000,
             max_health=1000,
-            position=position
+            position=position,
+            image_path="image associé"
         )
         self.population_capacity = 5
 

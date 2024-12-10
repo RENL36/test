@@ -10,7 +10,8 @@ class Stable(Building):
             size=(3, 3),
             health=500,
             max_health=500,
-            position=position
+            position=position,
+            image_path=""" image associé """
         )
 
     def spawn_horseman(self):
