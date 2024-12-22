@@ -10,16 +10,17 @@ class MenuView:
     """Initialize the menu view."""
     def __init__(self) -> None:
         self.current_option: int = 0
-        self.term = Terminal()
+        self.term: Terminal = Terminal()
 
     """Get the different options available in the menu depending on the game state."""
     def __get_menu_options(self, game_state: GameState) -> list[MenuOptions]:
-        if game_state == GameState.NOT_STARTED:
-            return [ MenuOptions.START_GAME, MenuOptions.LOAD_GAME, MenuOptions.SETTINGS, MenuOptions.EXIT ]
-        elif game_state == GameState.PAUSE:
-            return [ MenuOptions.RESUME, MenuOptions.SAVE_GAME, MenuOptions.SETTINGS, MenuOptions.EXIT ]
-        elif game_state == GameState.GAME_OVER:
-            return [ MenuOptions.RESTART, MenuOptions.LOAD_GAME, MenuOptions.SETTINGS, MenuOptions.EXIT ]
+        match game_state:
+            case GameState.NOT_STARTED:
+                return [ MenuOptions.START_GAME, MenuOptions.LOAD_GAME, MenuOptions.SETTINGS, MenuOptions.EXIT ]
+            case GameState.PAUSE:
+                return [ MenuOptions.RESUME, MenuOptions.SAVE_GAME, MenuOptions.SETTINGS, MenuOptions.EXIT ]
+            case GameState.GAME_OVER:
+                return [ MenuOptions.RESTART, MenuOptions.LOAD_GAME, MenuOptions.SETTINGS, MenuOptions.EXIT ]
 
     """Show the menu in the terminal window."""
     def show(self, game_state: GameState) -> int:
