@@ -50,14 +50,14 @@ class GameState(Enum):
 
 """
 Define the FPS options available:
-    - FPS_60 : 60 FPS
-    - FPS_30 : 30 FPS
     - FPS_15 : 15 FPS
+    - FPS_30 : 30 FPS
+    - FPS_60 : 60 FPS
 """
 class FPS(Enum):
-    FPS_60 = 60
-    FPS_30 = 30
     FPS_15 = 15
+    FPS_30 = 30
+    FPS_60 = 60
 
 """
 Define the different options available in the menu:

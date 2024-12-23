@@ -1,4 +1,4 @@
-from util.state_manager import MapSize, MapType, StartingCondition
+from util.state_manager import FPS, MapSize, MapType, StartingCondition
 
 class Settings:
     def __init__(self) -> None:
@@ -6,4 +6,4 @@ class Settings:
         self.map_type: MapType = MapType.RICH
         self.map_size: MapSize = MapSize.SMALL
         self.starting_condition: StartingCondition = StartingCondition.LEAN
-        self.fps: int = 60
+        self.fps: int = FPS.FPS_60
