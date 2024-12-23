@@ -9,6 +9,7 @@ class GameObject:
         self.__coordinate: Coordinate = None
         self.__alive: bool = True
         self.__size: int = 1
+        self.__sprite_path: str = None
     
     def get_name(self) -> str:
         return self.__name
@@ -38,6 +39,15 @@ class GameObject:
     
     def get_size(self) -> int:
         return self.__size
+    
+    def set_size(self, size: int) -> None:
+        self.__size = size
+
+    def get_sprite_path(self) -> str:
+        return self.__sprite_path
+    
+    def set_sprite_path(self, path: str):
+        self.__sprite_path = path
 
     def __str__(self):
         return (f"{self.__name} ({self.__letter}) - HP : {self.__hp}")

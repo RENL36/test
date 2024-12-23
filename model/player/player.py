@@ -1,4 +1,4 @@
-from model.resources.resource import Resource
+from model.resources import *
 from model.units.unit import Unit
 from model.buildings.building import Building
 from typing import Set
@@ -8,7 +8,7 @@ class Player:
         """Initializes the player with the given name and color."""
         self.__name: str = name
         self.__color: str = color
-        self.__resource: dict[Resource, int] = {"F": 0, "G": 0, "W":0}
+        self.__resource: dict[Resource, int] = {Food: 0, Gold: 0, Wood:0}
         self.__units: Set[Unit] = set()
         self.__unit_count: int = 0
         self.__buildings: Set[Building] = set()

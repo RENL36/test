@@ -1,31 +1,28 @@
-from model.maps.coordinate import Coordinate
+from model.game_object import GameObject
 
-class Resource:
+class Resource(GameObject):
     def __init__(self, name: str, letter: str, amount: int, spawnable: bool):
-        self.name: str = name
-        self.letter: str = letter
+        """Initializes the resource"""
+        super.__init__(name, letter, 1)
         self.amount: int = amount
-        self.spawnable: bool = spawnable
-        self.__cordinate = None
-
-    """"""    
-    def __str__(self):
-        return f"{self.name} ({self.letter}) - Amount: {self.amount}"
+        super.set_sprite_path(f"assets/sprites/resources/{name.lower()}.png")
     
-    """Get the coordinate of the resource"""
-    def get_coordinate(self):
-        return self.__cordinate
+    def get_amount(self) -> int:
+        """Returns the amount of the resource"""
+        return self.amount
     
-    """Set the coordinate of the resource"""
-    def set_coordinate(self, coordinate: Coordinate):
-        self.__cordinate = coordinate
-
-    """Get the name of the resource"""
-    def get_letter(self):
-        return self.__letter
-
-    """Get the amount of the resource"""
-    def get_amount(self):
-        return self.__amount
+    def is_spawnable(self) -> bool:
+        """Returns whether or not the resource can spawn"""
+        return self.spawnable
     
-      
+    def collect(self, amount: int) -> int:
+        """Collects the resource and returns the amount collected"""
+        if amount > self.amount:
+            amount = self.amount
+            self.damage(1)
+        self.amount -= amount
+        return amount
+    
+    def __hash__(self):
+        """Allows for the resource to be hashed"""
+        return hash(super.get_name())
