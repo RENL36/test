@@ -1,4 +1,4 @@
-from model.maps.map import Map
+from util.map import Map
 from util.settings import Settings
 from util.state_manager import MapType
 
