@@ -44,8 +44,8 @@ Define the different states of the game:
 """
 class GameState(Enum):
     NOT_STARTED = 0
-    PLAY = 1
-    PAUSE = 2
+    PLAYING = 1
+    PAUSED = 2
     GAME_OVER = 3
 
 """
