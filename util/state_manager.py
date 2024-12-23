@@ -16,7 +16,7 @@ Define the size of the map:
     - SMALL : 120x120
 """
 class MapSize(Enum):
-    SMALL = 0
+    SMALL = 120
 
 """
 Define the ressources allocated to each player at the beginning of the game:
@@ -44,10 +44,20 @@ Define the different states of the game:
 """
 class GameState(Enum):
     NOT_STARTED = 0
-    SETTINGS = 1
-    PLAY = 2
-    PAUSE = 3
-    GAME_OVER = 4
+    PLAYING = 1
+    PAUSED = 2
+    GAME_OVER = 3
+
+"""
+Define the FPS options available:
+    - FPS_15 : 15 FPS
+    - FPS_30 : 30 FPS
+    - FPS_60 : 60 FPS
+"""
+class FPS(Enum):
+    FPS_15 = 15
+    FPS_30 = 30
+    FPS_60 = 60
 
 """
 Define the different options available in the menu:
