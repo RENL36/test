@@ -4,20 +4,28 @@ class Map {}
 
 class Coordinate {}
 
+class GameObject {}
+
 class Entity {}
 
 class Unit {}
 
-class Villager {}
-
 class Building {}
-
-class TownCenter {}
 
 class Resource {}
 
-class Wood {}
+class Player {}
 
-class Food {}
+class GameController {}
 
-class Gold {}
+Map -- GameObject
+Map -- Coordinate
+Coordinate -- GameObject
+GameObject <|-- Entity
+Entity <|-- Unit
+Entity <|-- Building
+GameObject <|-- Resource
+Player -- GameController
+GameController -- Map
+
+@enduml
