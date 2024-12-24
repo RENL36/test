@@ -13,7 +13,7 @@ class GameController:
     
     def __generate_map(self) -> Map:
         """Generates a map based on the settings."""
-        map_generation: Map = Map(self.settings.map_size.value, self.settings.map_size.value)
+        map_generation: Map = Map(self.settings.map_size.value)
         match MapType(self.settings.map_type):
             case MapType.RICH:
                 pass
