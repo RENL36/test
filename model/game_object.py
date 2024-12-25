@@ -17,6 +17,9 @@ class GameObject:
     def get_letter(self) -> str:
         return self.__letter
     
+    def get_hp(self) -> int:
+        return self.__hp
+    
     def damage(self, damage: int) -> None:
         if damage < 0:
             raise ValueError("Damage cannot be negative")
@@ -53,4 +56,4 @@ class GameObject:
         self.__sprite_path = path
 
     def __str__(self):
-        return (f"{self.__name} ({self.__letter}) - HP : {self.__hp}")
+        return (f"{self.get_name()} ({self.get_letter()}) - HP : {self.get_hp()}")
