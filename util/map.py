@@ -2,8 +2,6 @@ from collections import defaultdict
 from model.game_object import GameObject
 from util.coordinate import Coordinate
 
-
-
 """
 This file contains the Map class which is used to represent the map of the game and the methods associated with it.
 It serves as the heart of the model-the representation of datas
@@ -22,7 +20,7 @@ class Map():
         """Method to check if an entity can be placed at a certain coordinate"""
         for x in range(object.get_size()):
             for y in range(object.get_size()):
-                if not (Coordinate(0, 0) <= Coordinate(coordinate.get_x() + x, coordinate.get_y() + y) <= Coordinate(self.get_size(), self.get_size())):
+                if coordinate is None or not (Coordinate(0, 0) <= coordinate and (coordinate + object.get_size() - 1) <= Coordinate(self.get_size() - 1, self.get_size() - 1)):
                     return False
                 if self.get(Coordinate(coordinate.get_x() + x, coordinate.get_y() + y)) is not None:
                     return False

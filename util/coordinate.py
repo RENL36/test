@@ -53,116 +53,144 @@ class Coordinate:
     
     def __lt__(self, other: 'Coordinate') -> bool:
         """
-        Less than comparison between two coordinates.
-        Is less than all the coordinates where the following conditions are all true:
-        - other.get_x() is less than self.get_x()
-        - other.get_y() is less than self.get_y()
-        """
-        if not isinstance(other, Coordinate):
-            return False
-        return self.get_x() > other.get_x() and self.get_y() > other.get_y()
-    
-    def __le__(self, other: 'Coordinate') -> bool:
-        """
-        Less than or equal to comparison between two coordinates.
-        Is less than or equal to all the coordinates where the following conditions are all true:
-        - other.get_x() is less than or equal to self.get_x()
-        - other.get_y() is less than or equal to self.get_y()
-        """
-        if not isinstance(other, Coordinate):
-            return False
-        return self.get_x() >= other.get_x() and self.get_y() >= other.get_y()
+        Less than comparison between two coordinates. (Symbol: <)
 
-    def __gt__(self, other: 'Coordinate') -> bool:
-        """
-        Greater than comparison between two coordinates.
-        Is greater than all the coordinates where the following conditions are all true:
-        - other.get_x() is greater than self.get_x()
-        - other.get_y() is greater than self.get_y()
+        Is less than all the coordinates where the following conditions are all true:
+        - self.get_x() is less than other.get_x()
+        - self.get_y() is less than other.get_y()
         """
         if not isinstance(other, Coordinate):
             return False
         return self.get_x() < other.get_x() and self.get_y() < other.get_y()
     
-    def __ge__(self, other: 'Coordinate') -> bool:
+    def __le__(self, other: 'Coordinate') -> bool:
         """
-        Greater than or equal to comparison between two coordinates.
-        Is greater than or equal to all the coordinates where the following conditions are all true:
-        - other.get_x() is greater than or equal to self.get_x()
-        - other.get_y() is greater than or equal to self.get_y()
+        Less than or equal to comparison between two coordinates. (Symbol: <=)
+
+        Is less than or equal to all the coordinates where the following conditions are all true:
+        - self.get_x() is less than or equal to other.get_x()
+        - self.get_y() is less than or equal to other.get_y()
         """
         if not isinstance(other, Coordinate):
             return False
         return self.get_x() <= other.get_x() and self.get_y() <= other.get_y()
 
+    def __gt__(self, other: 'Coordinate') -> bool:
+        """
+        Greater than comparison between two coordinates. (Symbol: >)
+
+        Is greater than all the coordinates where the following conditions are all true:
+        - self.get_x() is greater than other.get_x()
+        - self.get_y() is greater than other.get_y()
+        """
+        if not isinstance(other, Coordinate):
+            return False
+        return self.get_x() > other.get_x() and self.get_y() > other.get_y()
+    
+    def __ge__(self, other: 'Coordinate') -> bool:
+        """
+        Greater than or equal to comparison between two coordinates. (Symbol: >=)
+
+        Is greater than or equal to all the coordinates where the following conditions are all true:
+        - self.get_x() is greater than or equal to other.get_x()
+        - self.get_y() is greater than or equal to other.get_y()
+        """
+        if not isinstance(other, Coordinate):
+            return False
+        return self.get_x() >= other.get_x() and self.get_y() >= other.get_y()
+
     def __add__(self, other: 'Coordinate') -> 'Coordinate':
-        """Addition of two coordinates"""
+        """Addition of a coordinate with another coordinate or an integer"""
+        if isinstance(other, int):
+            return Coordinate(self.get_x() + other, self.get_y() + other)
         if not isinstance(other, Coordinate):
             return None
         return Coordinate(self.get_x() + other.get_x(), self.get_y() + other.get_y())
     
     def __sub__(self, other: 'Coordinate') -> 'Coordinate':
-        """Subtraction of two coordinates"""
+        """Subtraction of a coordinate with another coordinate or an integer"""
+        if isinstance(other, int):
+            return Coordinate(self.get_x() - other, self.get_y() - other)
         if not isinstance(other, Coordinate):
             return None
         return Coordinate(self.get_x() - other.get_x(), self.get_y() - other.get_y())
     
     def __mul__(self, other: 'Coordinate') -> 'Coordinate':
-        """Multiplication of two coordinates"""
+        """Multiplication of a coordinate with another coordinate or an integer"""
+        if isinstance(other, int):
+            return Coordinate(self.get_x() * other, self.get_y() * other)
         if not isinstance(other, Coordinate):
             return None
         return Coordinate(self.get_x() * other.get_x(), self.get_y() * other.get_y())
     
     def __truediv__(self, other: 'Coordinate') -> 'Coordinate':
-        """Division of two coordinates"""
+        """Division of a coordinate with another coordinate or an integer"""
+        if isinstance(other, int):
+            return Coordinate(self.get_x() / other, self.get_y() / other)
         if not isinstance(other, Coordinate):
             return None
         return Coordinate(self.get_x() / other.get_x(), self.get_y() / other.get_y())
     
     def __floordiv__(self, other: 'Coordinate') -> 'Coordinate':
-        """Floor division of two coordinates"""
+        """Floor division of a coordinate with another coordinate or an integer"""
+        if isinstance(other, int):
+            return Coordinate(self.get_x() // other, self.get_y() // other)
         if not isinstance(other, Coordinate):
             return None
         return Coordinate(self.get_x() // other.get_x(), self.get_y() // other.get_y())
     
     def __mod__(self, other: 'Coordinate') -> 'Coordinate':
-        """Modulus of two coordinates"""
+        """Modulus of a coordinate with another coordinate or an integer"""
+        if isinstance(other, int):
+            return Coordinate(self.get_x() % other, self.get_y() % other)
         if not isinstance(other, Coordinate):
             return None
         return Coordinate(self.get_x() % other.get_x(), self.get_y() % other.get_y())
     
     def __pow__(self, other: 'Coordinate') -> 'Coordinate':
-        """Power of two coordinates"""
+        """Power of a coordinate with another coordinate or an integer"""
+        if isinstance(other, int):
+            return Coordinate(self.get_x() ** other, self.get_y() ** other)
         if not isinstance(other, Coordinate):
             return None
         return Coordinate(self.get_x() ** other.get_x(), self.get_y() ** other.get_y())
     
     def __lshift__(self, other: 'Coordinate') -> 'Coordinate':
-        """Left shift of two coordinates"""
+        """Left shift of a coordinate with another coordinate or an integer"""
+        if isinstance(other, int):
+            return Coordinate(self.get_x() << other, self.get_y() << other)
         if not isinstance(other, Coordinate):
             return None
         return Coordinate(self.get_x() << other.get_x(), self.get_y() << other.get_y())
     
     def __rshift__(self, other: 'Coordinate') -> 'Coordinate':
-        """Right shift of two coordinates"""
+        """Right shift of a coordinate with another coordinate or an integer"""
+        if isinstance(other, int):
+            return Coordinate(self.get_x() >> other, self.get_y() >> other)
         if not isinstance(other, Coordinate):
             return None
         return Coordinate(self.get_x() >> other.get_x(), self.get_y() >> other.get_y())
     
     def __and__(self, other: 'Coordinate') -> 'Coordinate':
-        """Bitwise and of two coordinates"""
+        """Bitwise and of a coordinate with another coordinate or an integer"""
+        if isinstance(other, int):
+            return Coordinate(self.get_x() & other, self.get_y() & other)
         if not isinstance(other, Coordinate):
             return None
         return Coordinate(self.get_x() & other.get_x(), self.get_y() & other.get_y())
     
     def __xor__(self, other: 'Coordinate') -> 'Coordinate':
-        """Bitwise xor of two coordinates"""
+        """Bitwise xor of a coordinate with another coordinate or an integer"""
+        if isinstance(other, int):
+            return Coordinate(self.get_x() ^ other, self.get_y() ^ other)
         if not isinstance(other, Coordinate):
             return None
         return Coordinate(self.get_x() ^ other.get_x(), self.get_y() ^ other.get_y())
     
     def __or__(self, other: 'Coordinate') -> 'Coordinate':
-        """Bitwise or of two coordinates"""
+        """Bitwise or of a coordinate with another coordinate or an integer"""
+        if isinstance(other, int):
+            return Coordinate(self.get_x() | other, self.get_y() | other)
         if not isinstance(other, Coordinate):
             return None
         return Coordinate(self.get_x() | other.get_x(), self.get_y() | other.get_y())

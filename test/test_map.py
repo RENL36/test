@@ -22,6 +22,15 @@ class TestMapCoordinate(unittest.TestCase):
     def test_get_size(self):
         self.assertEqual(self.map.get_size(), 5, "The map size should be 5")
 
+    def test_check_placement(self):
+        for x in range(5):
+            for y in range(5):
+                if x < 2 and y < 2:
+                    self.assertTrue(self.map.check_placement(self.building, Coordinate(x, y)), f"The building should be able to be placed at position ({x}, {y})")
+                else:
+                    self.assertFalse(self.map.check_placement(self.building, Coordinate(x, y)), f"The building should not be able to be placed at position ({x}, {y})")
+                self.assertTrue(self.map.check_placement(self.unit, Coordinate(x, y)), f"The unit should be able to be placed at position ({x}, {y})")
+
     def test_add_building(self):
         self.map.add(self.building, Coordinate(0, 0))
         for x in range(5):
