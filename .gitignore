@@ -160,6 +160,10 @@ cython_debug/
 # VS Code
 .vscode/
 
+# Sphinx documentation
+docs/sphinx/_build/
+docs/sphinx/source/
+
 # PyCharm
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
 #  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
