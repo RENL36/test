@@ -6,14 +6,9 @@ class MapType(Enum):
 
     This Enum class defines the various types of maps that can be generated.
 
-    Attributes
-    ----------
-    RICH : int
-        Represents the map type with generous resources dotted across the map.
-    GOLD_CENTER : int
-        Represents the map type with all the gold at the centre of the map.
-    TEST : int
-        Represents the map type for testing purposes.
+    :cvar RICH: Represents the map type with generous resources dotted across the map.
+    :cvar GOLD_CENTER: Represents the map type with all the gold at the centre of the map.
+    :cvar TEST: Represents the map type for testing purposes.
     """
     RICH = 1
     GOLD_CENTER = 2
@@ -25,10 +20,7 @@ class MapSize(Enum):
 
     This Enum class defines the various sizes that the map can be.
 
-    Attributes
-    ----------
-    SMALL : int
-        Represents the small map size of 120x120.
+    :cvar SMALL: Represents the small map size of 120x120.
     """
     SMALL = 120
 
@@ -38,20 +30,15 @@ class StartingCondition(Enum):
 
     This Enum class defines the various starting conditions that the game can be in.
 
-    Attributes
-    ----------
-    LEAN : int
-        Represents the starting condition with lean resources:
-            - 50F, 200W, 50G
-            - Town Centre, 3 Villagers
-    MEAN : int
-        Represents the starting condition with mean resources:
-            - 2000(F,W,G)
-            - Town Centre, 3 Villagers
-    MARINES : int
-        Represents the starting condition with marines resources:
-            - 20000(F,W,G)
-            - 3 Town Centres, 15 Villagers, 2 (Barracks, Stable, Archery Range)
+    :cvar LEAN: Represents the starting condition with lean resources:
+        - 50F, 200W, 50G
+        - Town Centre, 3 Villagers
+    :cvar MEAN: Represents the starting condition with mean resources:
+        - 2000(F,W,G)
+        - Town Centre, 3 Villagers
+    :cvar MARINES: Represents the starting condition with marines resources:
+        - 20000(F,W,G)
+        - 3 Town Centres, 15 Villagers, 2 (Barracks, Stable, Archery Range)
     """
     LEAN = 0
     MEAN = 1
@@ -63,16 +50,10 @@ class GameState(Enum):
 
     This Enum class defines the various states that the game can be in.
 
-    Attributes
-    ----------
-    NOT_STARTED : int
-        The game has not started yet.
-    PLAYING : int
-        The game is currently being played.
-    PAUSED : int
-        The game is currently paused.
-    GAME_OVER : int
-        The game has ended.
+    :cvar NOT_STARTED: The game has not started yet.
+    :cvar PLAYING: The game is currently being played.
+    :cvar PAUSED: The game is currently paused.
+    :cvar GAME_OVER: The game has ended.
     """
     NOT_STARTED = 0
     PLAYING = 1
@@ -85,14 +66,9 @@ class FPS(Enum):
 
     This enum class defines the various frames per second options that can be selected from the game's settings.
 
-    Attributes
-    ----------
-    FPS_15 : int
-        Represents the option for 15 frames per second.
-    FPS_30 : int
-        Represents the option for 30 frames per second.
-    FPS_60 : int
-        Represents the option for 60 frames per second.
+    :cvar FPS_15: Represents the option for 15 frames per second.
+    :cvar FPS_30: Represents the option for 30 frames per second.
+    :cvar FPS_60: Represents the option for 60 frames per second.
     """
     FPS_15 = 15
     FPS_30 = 30
@@ -104,22 +80,13 @@ class MenuOptions(Enum):
 
     This enum class defines the various options that can be selected from the game's menu.
 
-    Attributes
-    ----------
-    EXIT : int
-        Represents the option to exit the game.
-    SETTINGS : int
-        Represents the option to open the settings menu.
-    START_GAME : int
-        Represents the option to start a new game.
-    RESUME : int
-        Represents the option to resume the current game.
-    RESTART : int
-        Represents the option to restart the current game.
-    LOAD_GAME : int
-        Represents the option to load a previously saved game.
-    SAVE_GAME : int
-        Represents the option to save the current game.
+    :cvar EXIT: Represents the option to exit the game.
+    :cvar SETTINGS: Represents the option to open the settings menu.
+    :cvar START_GAME: Represents the option to start a new game.
+    :cvar RESUME: Represents the option to resume the current game.
+    :cvar RESTART: Represents the option to restart the current game.
+    :cvar LOAD_GAME: Represents the option to load a previously saved game.
+    :cvar SAVE_GAME: Represents the option to save the current game.
     """
     EXIT = 0
     SETTINGS = 1
