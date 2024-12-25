@@ -1,8 +1,5 @@
 name: Sphinx documentation
 
-permissions:
-	contents: write
-
 on:
   	push:
     	branches: 
@@ -13,6 +10,10 @@ on:
 	workflow_dispatch:
 		branches:
 			- "main"
+
+
+permissions:
+	contents: write
 
 jobs:
     docs:
