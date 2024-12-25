@@ -1,7 +1,7 @@
 name: Sphinx documentation
 
 permissions:
-	contents: read write
+	contents: write
 
 on:
   	push:
