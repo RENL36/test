@@ -1,7 +1,8 @@
 from collections import defaultdict
 from model.game_object import GameObject
 from util.coordinate import Coordinate
-from model.entity import Entity
+
+
 
 """
 This file contains the Map class which is used to represent the map of the game and the methods associated with it.
@@ -48,8 +49,8 @@ class Map():
         return object
 
     def move(self, object: GameObject, new_coordinate: Coordinate):
-        """Method to move an entity to a new coordinate"""
-        if not object.get_coordinate().is_in_range(new_coordinate, 1):
+        """Method to move an entity to a new adjacent coordinate(8 surrounding coordinates)"""
+        if not object.get_coordinate().is_in_range(new_coordinate,1.5):
             raise ValueError("New coordinate is not adjacent to the entity's current coordinate.")
         if not self.check_placement(object, new_coordinate):
             raise ValueError("New coordinate is not available.")
@@ -82,7 +83,7 @@ class Map():
     
     def __repr__(self):
         """Testing functions"""
-        return f"smatrix({repr(self.full_matrix())})"
+        return f"smatrix({repr(self.get_map())})"
     
     def __str__(self) -> str:
         """Method to get the matrix of the map"""
@@ -90,10 +91,10 @@ class Map():
         for i in range(self.get_size()):
             row = ""
             for j in range(self.get_size()):
-                entity: Entity = self.__matrix[Coordinate(j, i)]
-                if entity is None:
+                object: GameObject  = self.__matrix[Coordinate(j, i)]
+                if object is None:
                     row += ". "
                 else:
-                    row += f"{entity.get_letter()} "
+                    row += f"{object.get_letter()} "
             rows.append(row.strip())
         return "\n".join(rows)

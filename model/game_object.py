@@ -37,6 +37,9 @@ class GameObject:
     def is_alive(self) -> bool:
         return self.__alive
     
+    def set_alive(self, alive: bool) -> None:
+        self.__alive = alive
+
     def get_size(self) -> int:
         return self.__size
     

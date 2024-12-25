@@ -23,17 +23,17 @@ class Coordinate:
         """Getter method for the y coordinate"""
         return self.__y
     
-    def distance(self, other: 'Coordinate') -> int:
-        """Distance method is used to calculate the number of steps between two tiles"""
+    def distance(self, other: 'Coordinate') -> float:
+        """Distance method is used to calculate the euclidian between two tiles"""
         if not isinstance(other, Coordinate):
             return None
-        return abs(self.get_x() - other.get_x()) + abs(self.get_y() - other.get_y())
+        return ((self.get_x() - other.get_x())**2 + (self.get_y() - other.get_y())**2)**0.5
     
-    def is_in_range(self, other: 'Coordinate', distance_range: int) -> bool:
+    def is_in_range(self, other: 'Coordinate', distance_range: float) -> bool:
         """Method to check if the distance between two tiles is less than or equal to a certain range (almost equal included)"""
         if not isinstance(other, Coordinate):
             return False
-        return self.distance(other) <= distance_range
+        return self.distance(other) <= distance_range + 1e-16
     
     def __hash__(self) -> int:
         """Hash for the coordinates to be read by the dictionary"""
@@ -48,3 +48,9 @@ class Coordinate:
     def __str__(self) -> str:
         """String representation of the coordinates"""
         return f"({self.get_x()},{self.get_y()})"
+    
+    def __le__(self, other: 'Coordinate') -> bool:
+        """Less than or equal to comparison between two coordinates"""
+        if not isinstance(other, Coordinate):
+            return False
+        return self.get_x() <= other.get_x() and self.get_y() <= other.get_y()  

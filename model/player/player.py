@@ -1,7 +1,12 @@
-from model.resources import *
+from model.resources.food import Food
+from model.resources.gold import Gold
+from model.resources.wood import Wood
+from model.resources.resource import Resource
 from model.units.unit import Unit
 from model.buildings.building import Building
 from typing import Set
+
+
 
 class Player:
     def __init__(self, name: str, color: str) -> None:
@@ -22,7 +27,7 @@ class Player:
         """Returns the color of the player"""
         return self.__color
     
-    def get_resources(self) -> dict[str, int]:
+    def get_resources(self) -> dict[Resource, int]:
         """Returns the resources of the player"""
         return self.__resource
 
@@ -46,7 +51,7 @@ class Player:
         return self.__units
     
     def get_unit_count(self) -> int:
-        """Returns the number of units of the player"""
+        """Retur\ns the number of units of the player"""
         return self.__unit_count
     
     def add_unit(self,unit: Unit) -> None:
