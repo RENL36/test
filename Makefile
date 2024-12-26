@@ -29,5 +29,4 @@ pdf: latex
 clean:
 	rm -rf docs/sphinx/source
 	rm -rf docs/sphinx/_build
-	rm -rf docs/sphinx/_static
 	rm -rf docs/sphinx/_templates

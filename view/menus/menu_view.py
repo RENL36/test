@@ -7,13 +7,22 @@ Used to create, start, load, save a game; change its settings, etc.
 Create a menu inside a Terminal window.
 """
 class MenuView:
-    """Initialize the menu view."""
+    """Represents the menu view in the terminal window."""
+
     def __init__(self) -> None:
+        """Initialize the menu view."""
         self.current_option: int = 0
         self.term: Terminal = Terminal()
 
-    """Get the different options available in the menu depending on the game state."""
     def __get_menu_options(self, game_state: GameState) -> list[MenuOptions]:
+        """
+        Get the different options available in the menu depending on the game state.
+
+        :param game_state: The current state of the game.
+        :type game_state: GameState
+        :return: A list of menu options available for the given game state.
+        :rtype: list[MenuOptions]
+        """
         match game_state:
             case GameState.NOT_STARTED:
                 return [ MenuOptions.START_GAME, MenuOptions.LOAD_GAME, MenuOptions.SETTINGS, MenuOptions.EXIT ]
@@ -22,8 +31,15 @@ class MenuView:
             case GameState.GAME_OVER:
                 return [ MenuOptions.RESTART, MenuOptions.LOAD_GAME, MenuOptions.SETTINGS, MenuOptions.EXIT ]
 
-    """Show the menu in the terminal window."""
     def show(self, game_state: GameState) -> int:
+        """
+        Show the menu in the terminal window.
+
+        :param game_state: The current state of the game.
+        :type game_state: GameState
+        :return: The value of the selected menu option.
+        :rtype: int
+        """
         with self.term.fullscreen(), self.term.cbreak(), self.term.hidden_cursor():
             while True:
                 print(self.term.clear)
@@ -47,8 +63,3 @@ class MenuView:
                     self.current_option += 1
                 elif key.code in [self.term.KEY_ENTER, '\n', '\r']:
                     return options[self.current_option].value
-
-if __name__ == "__main__":
-    menu = MenuView()
-    selected_option = menu.show(GameState.NOT_STARTED)
-    print(f"Selected option: {MenuOptions(selected_option).name}")

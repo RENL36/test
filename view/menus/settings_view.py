@@ -4,13 +4,27 @@ from util.settings import Settings
 from util.state_manager import FPS, MapSize, MapType, StartingCondition
 
 class SettingsMenu:
+    """A class to represent the settings menu in the game."""
+    
     def __init__(self, settings: Settings) -> None:
+        """
+        Initialize the SettingsMenu object.
+
+        :param settings: The settings object containing the current game settings.
+        :type settings: Settings
+        """
         self.term: Terminal = Terminal()
         self.settings: Settings = settings
         self.selected_option: int = 0
         self.__show()
     
     def __toggle_option(self, option: str) -> None:
+        """
+        Toggle the selected option in the settings.
+
+        :param option: The option to be toggled.
+        :type option: str
+        """
         match option:
             case "Map Type":
                 current_index = list(MapType).index(self.settings.map_type)
@@ -30,6 +44,7 @@ class SettingsMenu:
                 self.settings.fps = list(FPS)[new_index]
     
     def __show(self) -> None:
+        """Display the settings menu and handle user input."""
         with self.term.fullscreen(), self.term.cbreak(), self.term.hidden_cursor():
             while True:
                 print(self.term.clear)
