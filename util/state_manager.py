@@ -1,75 +1,93 @@
 from enum import Enum
 
-"""
-Define the different types of maps that can be generated:
-    - RICH : Generous resources dotted across the map
-    - GOLD_CENTER : All the gold is at the centre of the map
-    - TEST : For testing purposes
-"""
 class MapType(Enum):
+    """
+    Enum representing the different types of maps that can be generated.
+
+    This Enum class defines the various types of maps that can be generated.
+
+    :cvar RICH: Represents the map type with generous resources dotted across the map.
+    :cvar GOLD_CENTER: Represents the map type with all the gold at the centre of the map.
+    :cvar TEST: Represents the map type for testing purposes.
+    """
     RICH = 1
     GOLD_CENTER = 2
     TEST = 9
 
-"""
-Define the size of the map:
-    - SMALL : 120x120
-"""
 class MapSize(Enum):
+    """
+    Enum representing the different sizes of the map.
+
+    This Enum class defines the various sizes that the map can be.
+
+    :cvar SMALL: Represents the small map size of 120x120.
+    """
     SMALL = 120
 
-"""
-Define the ressources allocated to each player at the beginning of the game:
-    - LEAN :
+class StartingCondition(Enum):
+    """
+    Enum representing the different starting conditions of the game.
+
+    This Enum class defines the various starting conditions that the game can be in.
+
+    :cvar LEAN: Represents the starting condition with lean resources:
         - 50F, 200W, 50G
         - Town Centre, 3 Villagers
-    - MEAN :
+    :cvar MEAN: Represents the starting condition with mean resources:
         - 2000(F,W,G)
         - Town Centre, 3 Villagers
-    - MARINES :
+    :cvar MARINES: Represents the starting condition with marines resources:
         - 20000(F,W,G)
         - 3 Town Centres, 15 Villagers, 2 (Barracks, Stable, Archery Range)
-"""
-class StartingCondition(Enum):
+    """
     LEAN = 0
     MEAN = 1
     MARINES = 2
 
-"""
-Define the different states of the game:
-    - NOT_STARTED : The game has not started yet
-    - PLAY : The game is currently being played
-    - PAUSE : The game is paused
-    - GAME_OVER : The game is finished
-"""
 class GameState(Enum):
+    """
+    Enum representing the different states of the game.
+
+    This Enum class defines the various states that the game can be in.
+
+    :cvar NOT_STARTED: The game has not started yet.
+    :cvar PLAYING: The game is currently being played.
+    :cvar PAUSED: The game is currently paused.
+    :cvar GAME_OVER: The game has ended.
+    """
     NOT_STARTED = 0
     PLAYING = 1
     PAUSED = 2
     GAME_OVER = 3
 
-"""
-Define the FPS options available:
-    - FPS_15 : 15 FPS
-    - FPS_30 : 30 FPS
-    - FPS_60 : 60 FPS
-"""
 class FPS(Enum):
+    """
+    Enum class representing the different frames per second options available in the game.
+
+    This enum class defines the various frames per second options that can be selected from the game's settings.
+
+    :cvar FPS_15: Represents the option for 15 frames per second.
+    :cvar FPS_30: Represents the option for 30 frames per second.
+    :cvar FPS_60: Represents the option for 60 frames per second.
+    """
     FPS_15 = 15
     FPS_30 = 30
     FPS_60 = 60
 
-"""
-Define the different options available in the menu:
-    - EXIT : Exit the game
-    - SETTINGS : Open the settings menu
-    - START_GAME : Start a new game
-    - LOAD_GAME : Load a saved game
-    - RESUME : Resume the game
-    - RESTART : Restart the game
-    - SAVE_GAME : Save the game
-"""
 class MenuOptions(Enum):
+    """
+    Enum class representing the different menu options available in the game.
+
+    This enum class defines the various options that can be selected from the game's menu.
+
+    :cvar EXIT: Represents the option to exit the game.
+    :cvar SETTINGS: Represents the option to open the settings menu.
+    :cvar START_GAME: Represents the option to start a new game.
+    :cvar RESUME: Represents the option to resume the current game.
+    :cvar RESTART: Represents the option to restart the current game.
+    :cvar LOAD_GAME: Represents the option to load a previously saved game.
+    :cvar SAVE_GAME: Represents the option to save the current game.
+    """
     EXIT = 0
     SETTINGS = 1
     START_GAME = 2

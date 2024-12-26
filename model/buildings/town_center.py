@@ -1,32 +1,21 @@
 from model.buildings.building import Building
-from model.resources import Wood
+from model.resources.wood import Wood
 
 class TownCenter(Building):
-    def __init__(self) -> None:
-        super().__init__("Town Center", "T", 1000, {Wood: 100}, 4, 10)
-        self.__population = 0
-        self.__capacity = 5
-
-    def get_population(self) -> int:
-        """Returns the population of the town center"""
-        return self.__population
-
-    def get_capacity(self) -> int:
-        """Returns the population capacity of the town center"""
-        return self.__capacity
+    """This class represents the Town Center building."""
     
-    def add_capacity(self, amount: int) -> None:
-        """Adds to the population capacity of the town center"""
-        if amount < 1:
-            raise ValueError("Amount must be greater than 0")
-        if self.get_population() + amount > self.get_capacity():
-            raise ValueError("Population exceeds capacity")
-        self.__capacity += amount
+    def __init__(self) -> None:
+        """Initialize a TownCenter object."""
+        super().__init__("Town Center", "T", 1000, {Wood: 100}, 4, 10)
+        self.__capacity_increase = 5
+        super().set_population_increase(True)
+        super().set_resources_drop_point(True)
 
-    def remove_capacity(self, amount: int) -> None:
-        """Removes from the population capacity of the town center"""
-        if amount < 1:
-            raise ValueError("Amount must be greater than 0")
-        if self.get_population() - amount < 0:
-            raise ValueError("Population cannot be negative")
-        self.__capacity -= amount
+    def get_capacity_increase(self) -> int:
+        """
+        Returns the population capacity increase of the town center.
+
+        :return: The population capacity increase.
+        :rtype: int
+        """
+        return self.__capacity_increase

@@ -4,12 +4,15 @@ from util.state_manager import GameState, MenuOptions
 from view.menus.menu_view import MenuView
 from view.menus.settings_view import SettingsMenu
 
-"""
-Controller for all the menus in the game.
-"""
 class MenuController:
+    """Controller for all the menus in the game."""
+    
     def __init__(self) -> None:
-        """Initializes the MenuController with the default state NOT_STARTED and calls the main menu."""
+        """
+        Initializes the MenuController with the default state NOT_STARTED and calls the main menu.
+        
+        :rtype: None
+        """
         self.state: GameState = GameState.NOT_STARTED
         self.settings: Settings = Settings()
         self.__menu = MenuView()
@@ -17,12 +20,22 @@ class MenuController:
         self.call_menu()
     
     def call_menu(self) -> None:
-        """When called, MenuController will display the main menu based on the current state."""
+        """
+        When called, MenuController will display the main menu based on the current state.
+        
+        :rtype: None
+        """
         option_selected: MenuOptions = self.__menu.show(self.state)
         self.handle_option(option_selected)
     
     def handle_option(self, option: MenuOptions) -> None:
-        """Handles the option selected by the user."""
+        """
+        Handles the option selected by the user.
+        
+        :param option: The option selected by the user.
+        :type option: MenuOptions
+        :rtype: None
+        """
         match MenuOptions(option):
             case MenuOptions.EXIT:
                 self.exit_game()
@@ -45,11 +58,19 @@ class MenuController:
                 pass
     
     def exit_game(self) -> None:
-        """Exits the game."""
+        """
+        Exits the game.
+        
+        :rtype: None
+        """
         exit(0)
 
     def start_game(self) -> None:
-        """Starts a new game by creating a GameController instance."""
+        """
+        Starts a new game by creating a GameController instance.
+        
+        :rtype: None
+        """
         self.state = GameState.PLAYING
         self.__game_controller = GameController(self.settings)
         pass
