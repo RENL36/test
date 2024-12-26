@@ -1,13 +1,12 @@
 from blessed import Terminal
 from util.state_manager import GameState, MenuOptions
 
-"""
-View for the starting screen of the game and the menu (pause).
-Used to create, start, load, save a game; change its settings, etc.
-Create a menu inside a Terminal window.
-"""
 class MenuView:
-    """Represents the menu view in the terminal window."""
+    """
+    Represents the menu view in the terminal window.
+    It's used to display the starting screen of the game, the menu (pause), and all available options:
+    Create, start, load, save a game; change its settings, etc.
+    """
 
     def __init__(self) -> None:
         """Initialize the menu view."""

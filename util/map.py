@@ -223,20 +223,11 @@ class Map():
                 result[x][y] = self.get(Coordinate(x, y))
         return result
     
-    def __repr__(self):
+    def tabler_str(self) -> str:
         """
-        Get the string representation of the map for testing purposes.
+        Get the string representation of the map in tabler format.
 
-        :return: The string representation of the map.
-        :rtype: str
-        """
-        return f"smatrix({repr(self.get_map())})"
-    
-    def __str__(self) -> str:
-        """
-        Get the matrix of the map with table-like borders.
-
-        :return: The matrix of the map as a string.
+        :return: The matrix of the map as a string in tabler format.
         :rtype: str
         """
         horizontal_line = lambda length: "┌" + "┬".join(["─" * 3] * length) + "┐"
@@ -253,4 +244,36 @@ class Map():
             if x < self.get_size() - 1:
                 rows.append(middle_line(self.get_size()))
         rows.append(bottom_line(self.get_size()))
+        return "\n".join(rows)
+    
+    def __str__(self) -> str:
+        """
+        Get the string representation of the map.
+
+        :return: The matrix of the map as a string.
+        :rtype: str
+        """
+        rows = []
+        for y in range(self.get_size()):
+            row = []
+            for x in range(self.get_size()):
+                obj = self.get(Coordinate(x, y))
+                row.append(obj.get_letter() if obj else '·')
+            rows.append("".join(row))
+        return "\n".join(rows)
+    
+    def __repr__(self):
+        """
+        Get the string representation of the map for testing purposes.
+
+        :return: The string representation of the map.
+        :rtype: str
+        """
+        rows = []
+        for y in range(self.get_size()):
+            row = []
+            for x in range(self.get_size()):
+                obj = self.get(Coordinate(x, y))
+                row.append(obj.get_letter() if obj else '·')
+            rows.append("".join(row))
         return "\n".join(rows)
