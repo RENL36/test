@@ -27,7 +27,7 @@ class Unit(Entity):
         :type speed: float
         """
         super().__init__(name, letter, hp, cost, spawning_time)
-        self.__attack_per_second: float = attack_per_second
+        self.__attack_per_second: int = attack_per_second
         self.__speed: float = speed
         self.__range: int = 1
         super().set_sprite_path(f"assets/sprites/units/{name.lower()}.png")

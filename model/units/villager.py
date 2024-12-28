@@ -49,10 +49,11 @@ class Villager(Unit):
         :param amount: The amount of resource to stock.
         :type amount: int
         """
-        if self.__inventory[resource] + amount <= self.__inventory_size:
+        if self.__inventory[Wood] + self.__inventory[Food] + self.__inventory[Gold] + amount <= self.__inventory_size:
             self.__inventory[resource] += amount
         else:
-            raise ValueError("Capacity not exceeded")
+            self.__inventory[resource] += self.__inventory_size - self.__inventory[Wood] + self.__inventory[Food] + self.__inventory[Gold]
+            raise ValueError("Capacity exceeded")
         
     def empty_resource(self) -> dict[Resource, int]:
         """
