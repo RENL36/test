@@ -1,8 +1,6 @@
 
 from model.entity import Entity
-import typing
-if typing.TYPE_CHECKING:
-    from model.resources.resource import Resource
+from model.resources.resource import Resource
 
 class Unit(Entity):
     """This class represents the units on the map."""
