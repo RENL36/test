@@ -3,7 +3,6 @@ from model.resources.food import Food
 from model.resources.gold import Gold
 from model.resources.wood import Wood
 from model.resources.resource import Resource
-
 class Villager(Unit):
     """This class represents the Villager unit"""
 
