@@ -26,6 +26,24 @@ class Unit(Entity):
         :type speed: float
         """
         super().__init__(name, letter, hp, cost, spawning_time)
-        self.__attack_per_second: float = attack_per_second
+        self.__attack_per_second: int = attack_per_second
         self.__speed: float = speed
         super().set_sprite_path(f"assets/sprites/units/{self.get_name().lower()}.png")
+
+    def get_attack_per_second(self) -> int:
+        """
+        Returns the attack rate of the unit.
+
+        :return: The attack rate of the unit.
+        :rtype: int
+        """
+        return self.__attack_per_second
+    
+    def get_speed(self) -> float:
+        """
+        Returns the speed of the unit.
+
+        :return: The speed of the unit.
+        :rtype: float
+        """
+        return self.__speed
