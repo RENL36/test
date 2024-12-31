@@ -1,103 +1,190 @@
-import curses
-import time
-import random
-from util.coordinate import Coordinate
-from model.game_object import GameObject
 from util.map import Map
+from view.base_view import BaseView
+from blessed import Terminal
+from util.coordinate import Coordinate
+import threading, time
+import typing
+if typing.TYPE_CHECKING:
+    from controller.view_controller import ViewController
 
-class MapWrapper:
-    def __init__(self, map_object: Map, viewport_size: int = 30):
-        """
-        Wrapper around the Map class for interactive display.
-        
-        :param map_object: The Map instance to wrap.
-        :type map_object: Map
-        :param viewport_size: Size of the viewport to display.
-        :type viewport_size: int
-        """
-        self.map = map_object
-        self.viewport_size = viewport_size
-        self.size = map_object.get_size()
-        self.top_left = Coordinate(0, 0)
+# NOTE: On Terminal, the first line is ALWAYS HIDDEN. So the first line showing is actually the 2nd line. The same goes for the last line: the last line "n" is actually the line "n+1".
+#
+# Example:
+# [1] 0 > hidden to keep height = 4 and because you wrote on line 4
+# [2] 1 >
+# [3] 2 > (3,1)
+# [4] 3 > (3,1)
+# [5] 4 > Bottom is here
 
-    def display(self):
-        """
-        Generate a string representation of the current viewport.
-        """
-        x_start = self.top_left.get_x()
-        y_start = self.top_left.get_y()
-
-        x_end = min(self.size - 1, x_start + self.viewport_size - 1)
-        y_end = min(self.size - 1, y_start + self.viewport_size - 1)
-
-        view_map = self.map.get_map_from_to(Coordinate(x_start, y_start), Coordinate(x_end, y_end))
-        grid = f"Viewport Coordinates: ({x_start}, {y_start})\n"
-
-        for x in range(x_start, x_end + 1):
-            row = []
-            for y in range(y_start, y_end + 1):
-                obj = view_map.get(Coordinate(x, y), None)
-                row.append(f"{obj.get_letter() if obj else '.'}")
-            grid += " ".join(row) + "\n"
-        return grid
-
-    def move_viewport(self, dx: int, dy: int):
-        """
-        Move the viewport by the specified deltas.
-        
-        :param dx: Change in x-coordinate.
-        :param dy: Change in y-coordinate.
-        """
-        new_x = max(0, min(self.size - self.viewport_size, self.top_left.get_x() + dx))
-        new_y = max(0, min(self.size - self.viewport_size, self.top_left.get_y() + dy))
-        self.top_left = Coordinate(new_x, new_y)
-
-
-def display_interactive_map(stdscr, wrapper: MapWrapper, fps: int = 20):
+class TerminalView(BaseView):
     """
-    Interactive display of the map using curses.
+    Terminal view for the game. It's used to display the game map and allow the player to navigate it using ZQSD and the arrow keys.
+    Print the map in the Terminal depending on the player's position and the size of the viewport.
+    Automatically update each tick.
+    """
+
+    def __init__(self, controller: 'ViewController') -> None:
+        """Initialize the menu view."""
+        super().__init__(controller)
+        self.__terminal = Terminal()
+        self.__from_coord = Coordinate(0, 0)
+        self.__to_coord = Coordinate(0, 0)
+
+        self.__size()
+        self.__map: Map = self._BaseView__controller.get_map()
+
+        self.__display_thread = threading.Thread(target=self.__display_loop)
+        self.__input_thread = threading.Thread(target=self.__input_loop)
     
-    :param stdscr: Curses standard screen object.
-    :param wrapper: MapWrapper instance for map interaction.
-    :param fps: Frames per second for rendering.
-    """
-    frame_time = 1 / fps
-    curses.curs_set(0)
-    stdscr.timeout(100)
+    def show(self) -> None:
+        """Start the display and input threads."""
+        self.__display_thread.start()
+        self.__input_thread.start()
+    
+    def __size(self) -> None:
+        """
+        Take care of the fact that the first line is always hidden and the last line is the n+1 line.
+        """
+        self.__terminal_width = self.__terminal.width
+        self.__terminal_height = self.__terminal.height - 1
 
-    try:
-        while True:
-            stdscr.clear()
-            stdscr.addstr(wrapper.display())
+    def __str_frame(self):
+        """
+        Using "┌", "┐", "└", "┘", "─" and "│" characters, create a frame with the size of the terminal or the map, whichever is smaller.
+        The frame is used to separate the map from the text.
+        """
+        frame_width = min(self.__terminal_width, self.__map.get_size() + 2)
+        frame_height = min(self.__terminal_height, self.__map.get_size() + 2)
 
-            key = stdscr.getch()
-            if key == ord('w') or key == curses.KEY_UP:
-                wrapper.move_viewport(-1, 0)
-            elif key == ord('s') or key == curses.KEY_DOWN:
-                wrapper.move_viewport(1, 0)
-            elif key == ord('a') or key == curses.KEY_LEFT:
-                wrapper.move_viewport(0, -1)
-            elif key == ord('d') or key == curses.KEY_RIGHT:
-                wrapper.move_viewport(0, 1)
+        frame = []
+        frame.append("┌" + "─" * (frame_width - 2) + "┐")
+        for _ in range(frame_height - 2):
+            frame.append("│" + " " * (frame_width - 2) + "│")
+        frame.append("└" + "─" * (frame_width - 2) + "┘")
+        return frame
 
-            stdscr.refresh()
-            time.sleep(frame_time)
+    def __str_map(self) -> list[str]:
+        """
+        Print the map in the terminal using the string representation of the Map object.
+        Using the __from_coord coordinate and the self.__terminal_width and self.__terminal_height, calculate the from and to coordinates to print the map.
+        Use the method Map.get_from_to(from_coord, to_coord) to get the map part to print.
+        Consider the fact that the map is displayed inside the frame, so the map is shifted by 1 to the left, 1 to the top, 1 to the right and 1 to the bottom.
+        """
+        map_width = min(self.__terminal_width - 2, self.__map.get_size())
+        map_height = min(self.__terminal_height - 2, self.__map.get_size())
+        self.__to_coord = self.__from_coord + Coordinate(map_width, map_height)
+        self.__view = self.__map.get_from_to(self.__from_coord, self.__to_coord)
+        map_lines = str(self.__view).split("\n")
+        cropped_lines = [line[:map_width] for line in map_lines[:map_height]]
+        return cropped_lines
+    
+    def __colored_line(self, line: str, frame_line: str) -> str:
+        """
+        Color the map elements: uppercase letters in red and bold, lowercase letters in blue, and hide empty spaces.
+        Include the frame in the colored line.
+        """
+        colored_line = ""
+        for char in line:
+            if char.isupper():
+                colored_line += self.__terminal.bold_red(char)
+            elif char.islower():
+                colored_line += self.__terminal.blue(char)
+            elif char == '·':
+                colored_line += ' '
+            else:
+                colored_line += char
+        return frame_line[:1] + colored_line + self.__terminal.normal + frame_line[1 + len(line):]
+    
+    def __add_coord(self, line: list[str]) -> list[str]:
+        """
+        Add the top left coordinate on the top left corner of the frame.
+        Add the bottom right coordinate on the bottom right corner of the frame.
+        """
+        top_left = f"({self.__from_coord.get_x()}, {self.__from_coord.get_y()})"
+        bottom_right_coord = self.__to_coord - Coordinate(1, 1)
+        bottom_right = f"({bottom_right_coord.get_x()}, {bottom_right_coord.get_y()})"
+        line[0] = f"{top_left}{line[0][len(top_left):]}"
+        line[-1] = f"{line[-1][:len(line[-1]) - len(bottom_right)]}{bottom_right}"
+        return line
 
-    except KeyboardInterrupt:
-        stdscr.addstr("\nProgram stopped by user.\n")
-        stdscr.refresh()
-        time.sleep(1)
+    def __display_loop(self) -> None:
+        """
+        Display the map in the terminal and update it each tick (depending on the FPS).
+        The display width and height are set to the terminal size
+        Display is composed of 2 layers: the map and the text ; they don't overlap.
+        """
+        with self.__terminal.fullscreen(), self.__terminal.cbreak(), self.__terminal.hidden_cursor():
+            while self._BaseView__running:
+                self.__size()
+                frame = self.__str_frame()
+                map_part = self.__str_map()
+                print(self.__terminal.clear(), end="")
+                for i, line in enumerate(map_part[:min(len(map_part), self.__terminal_height - 2)]):
+                    frame[i + 1] = self.__colored_line(line, frame[i + 1])
+                frame = self.__add_coord(frame)
+                print("\n".join(frame))
+                self.__terminal.flush()
+                time.sleep(1 / self._BaseView__controller.get_settings().fps.value)
 
+    def __input_loop(self) -> None:
+        """
+        Handle the user input to move the viewport.
+        
+        ZQSD or WASD or arrow keys are used to move the viewport.
+        MAJ + ZQSD or MAJ + WASD or MAJ + arrow keys are used to move the viewport by 5 cells.
+        P is used to pause the game.
+        TAB is used to pause the game and display the stats menu.
+        Q is used to exit the game.
+        F12 is used to take switch view.
 
-map_instance = Map(160)
+        :return: None
+        """
+        # TODO: Press two keys at the same time
+        # TODO: Press a key and keep it pressed
+        while self._BaseView__running:
+            key = self.__terminal.inkey()
+            match key:
+                case "z" | "w" | "KEY_UP":
+                    self.__from_coord += Coordinate(0, -1)
+                case "s" | "KEY_DOWN":
+                    self.__from_coord += Coordinate(0, 1)
+                case "q" | "a" | "KEY_LEFT":
+                    self.__from_coord += Coordinate(-1, 0)
+                case "d" | "KEY_RIGHT":
+                    self.__from_coord += Coordinate(1, 0)
+                case "Z" | "W":
+                    self.__from_coord += Coordinate(0, -5)
+                case "S":
+                    self.__from_coord += Coordinate(0, 5)
+                case "Q" | "A":
+                    self.__from_coord += Coordinate(-5, 0)
+                case "D":
+                    self.__from_coord += Coordinate(5, 0)
+                case "p" | "P":
+                    self._BaseView__controller.pause()
+                case "TAB":
+                    self._BaseView__controller.pause()
+                    self._BaseView__controller.display_stats()
+                case "q" | "Q":
+                    self.__exit()
+                case "F12":
+                    self._BaseView__controller.switch_view()
+                case _:
+                    pass
 
-# Add random GameObjects for testing
-for _ in range(50):
-    x = random.randint(0, 159)
-    y = random.randint(0, 159)
-    obj = GameObject("oui", 'T', 1)
-    if map_instance.check_placement(obj, Coordinate(x, y)):
-        map_instance.add(obj, Coordinate(x, y))
+            self.__from_coord = Coordinate(
+                max(0, min(self.__map.get_size() - self.__terminal_width + 2, self.__from_coord.get_x())),
+                max(0, min(self.__map.get_size() - self.__terminal_height + 2, self.__from_coord.get_y()))
+            )
 
-wrapper = MapWrapper(map_instance, viewport_size=30)
-curses.wrapper(display_interactive_map, wrapper, fps=20)
+    def __pause(self):
+        self._BaseView__running = False
+    
+    def __resume(self):
+        self._BaseView__running = True
+
+    def __exit(self):
+        self.__pause()
+        self.__display_thread.join()
+        self.__input_thread.join()
+        self._BaseView__controller.exit()
