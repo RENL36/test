@@ -116,6 +116,13 @@ class TerminalView(BaseView):
         with self.__terminal.fullscreen(), self.__terminal.cbreak(), self.__terminal.hidden_cursor():
             while self._BaseView__running:
                 self.__size()
+                if self.__terminal_width < 10 or self.__terminal_height < 10:
+                    print(self.__terminal.clear(), end="")
+                    print(self.__terminal.bold_red("Error: Terminal size is too small. Please resize the terminal."))
+                    self.__terminal.flush()
+                    time.sleep(1)
+                    continue
+
                 frame = self.__str_frame()
                 map_part = self.__str_map()
                 print(self.__terminal.clear(), end="")
