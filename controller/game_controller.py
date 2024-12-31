@@ -1,3 +1,4 @@
+from controller.view_controller import ViewController
 from util.map import Map
 from util.settings import Settings
 from util.state_manager import MapType
@@ -14,6 +15,7 @@ class GameController:
         """
         self.settings: Settings = settings
         self.__map: Map = self.__generate_map()
+        self.__view_controller: ViewController = ViewController(self.__map, self.settings)
     
     def __generate_map(self) -> Map:
         """
@@ -29,5 +31,17 @@ class GameController:
             case MapType.GOLD_CENTER:
                 pass
             case MapType.TEST:
-                pass
+                # Generate a test map 10x10 with a town center at (0,0) and a villager at (5,5)
+                from util.coordinate import Coordinate
+                from model.buildings.town_center import TownCenter
+                from model.units.villager import Villager
+                map_generation = Map(10)
+                town_center = TownCenter()
+                coordinate = Coordinate(0,0)
+                town_center.set_coordinate(coordinate)
+                map_generation.add(town_center, coordinate)
+                villager = Villager()
+                coordinate = Coordinate(5,5)
+                villager.set_coordinate(coordinate)
+                map_generation.add(villager, coordinate)
         return map_generation
