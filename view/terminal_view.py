@@ -7,7 +7,8 @@ import typing
 if typing.TYPE_CHECKING:
     from controller.view_controller import ViewController
 
-# NOTE: On Terminal, the first line is ALWAYS HIDDEN. So the first line showing is actually the 2nd line. The same goes for the last line: the last line "n" is actually the line "n+1".
+# NOTE: On Terminal, the first line is ALWAYS HIDDEN. So the first line showing is actually the 2nd line.
+# The same goes for the last line: the last line "n" is actually the line "n+1".
 #
 # Example:
 # [1] 0 > hidden to keep height = 4 and because you wrote on line 4
@@ -29,6 +30,7 @@ class TerminalView(BaseView):
         self.__terminal = Terminal()
         self.__from_coord = Coordinate(0, 0)
         self.__to_coord = Coordinate(0, 0)
+        self.__stop_event = threading.Event()
 
         self.__size()
         self.__map: Map = self._BaseView__controller.get_map()
@@ -38,6 +40,7 @@ class TerminalView(BaseView):
     
     def show(self) -> None:
         """Start the display and input threads."""
+        self.__stop_event.clear()
         self.__display_thread.start()
         self.__input_thread.start()
     
@@ -101,7 +104,7 @@ class TerminalView(BaseView):
         Add the bottom right coordinate on the bottom right corner of the frame.
         """
         top_left = f"({self.__from_coord.get_x()}, {self.__from_coord.get_y()})"
-        bottom_right_coord = self.__to_coord - Coordinate(1, 1)
+        bottom_right_coord = self.__to_coord - 1
         bottom_right = f"({bottom_right_coord.get_x()}, {bottom_right_coord.get_y()})"
         line[0] = f"{top_left}{line[0][len(top_left):]}"
         line[-1] = f"{line[-1][:len(line[-1]) - len(bottom_right)]}{bottom_right}"
@@ -114,7 +117,7 @@ class TerminalView(BaseView):
         Display is composed of 2 layers: the map and the text ; they don't overlap.
         """
         with self.__terminal.fullscreen(), self.__terminal.cbreak(), self.__terminal.hidden_cursor():
-            while self._BaseView__running:
+            while not self.__stop_event.is_set():
                 self.__size()
                 if self.__terminal_width < 10 or self.__terminal_height < 10:
                     print(self.__terminal.clear(), end="")
@@ -141,43 +144,43 @@ class TerminalView(BaseView):
         MAJ + ZQSD or MAJ + WASD or MAJ + arrow keys are used to move the viewport by 5 cells.
         P is used to pause the game.
         TAB is used to pause the game and display the stats menu.
-        Q is used to exit the game.
+        ECHAP is used to exit the game.
         F12 is used to take switch view.
 
         :return: None
         """
         # TODO: Press two keys at the same time
         # TODO: Press a key and keep it pressed
-        while self._BaseView__running:
+        while not self.__stop_event.is_set():
             key = self.__terminal.inkey()
-            match key:
-                case "z" | "w" | "KEY_UP":
-                    self.__from_coord += Coordinate(0, -1)
-                case "s" | "KEY_DOWN":
-                    self.__from_coord += Coordinate(0, 1)
-                case "q" | "a" | "KEY_LEFT":
-                    self.__from_coord += Coordinate(-1, 0)
-                case "d" | "KEY_RIGHT":
-                    self.__from_coord += Coordinate(1, 0)
-                case "Z" | "W":
-                    self.__from_coord += Coordinate(0, -5)
-                case "S":
-                    self.__from_coord += Coordinate(0, 5)
-                case "Q" | "A":
-                    self.__from_coord += Coordinate(-5, 0)
-                case "D":
-                    self.__from_coord += Coordinate(5, 0)
-                case "p" | "P":
-                    self._BaseView__controller.pause()
-                case "TAB":
-                    self._BaseView__controller.pause()
-                    self._BaseView__controller.display_stats()
-                case "q" | "Q":
-                    self.__exit()
-                case "F12":
-                    self._BaseView__controller.switch_view()
-                case _:
-                    pass
+            if key in ["z", "w"] or key.code == self.__terminal.KEY_UP:
+                self.__from_coord += Coordinate(0, -1)
+            elif key == "s" or key.code == self.__terminal.KEY_DOWN:
+                self.__from_coord += Coordinate(0, 1)
+            elif key in ["q", "a"] or key.code == self.__terminal.KEY_LEFT:
+                self.__from_coord += Coordinate(-1, 0)
+            elif key == "d" or key.code == self.__terminal.KEY_RIGHT:
+                self.__from_coord += Coordinate(1, 0)
+            elif key in ["Z", "W"]:
+                self.__from_coord += Coordinate(0, -5)
+            elif key == "S":
+                self.__from_coord += Coordinate(0, 5)
+            elif key in ["Q", "A"]:
+                self.__from_coord += Coordinate(-5, 0)
+            elif key == "D":
+                self.__from_coord += Coordinate(5, 0)
+            elif key in ["p", "P"]:
+                self.__pause()
+                self._BaseView__controller.pause()
+            elif key.code == self.__terminal.KEY_TAB:
+                self.__pause()
+                self._BaseView__controller.pause()
+                self._BaseView__controller.display_stats()
+            elif key.code == self.__terminal.KEY_ESCAPE:
+                self.exit()
+                self._BaseView__controller.exit()
+            elif key.code == self.__terminal.KEY_F12:
+                self._BaseView__controller.switch_view()
 
             self.__from_coord = Coordinate(
                 max(0, min(self.__map.get_size() - self.__terminal_width + 2, self.__from_coord.get_x())),
@@ -185,13 +188,18 @@ class TerminalView(BaseView):
             )
 
     def __pause(self):
-        self._BaseView__running = False
-    
-    def __resume(self):
-        self._BaseView__running = True
+        self.__stop_event.set()
 
-    def __exit(self):
+    def resume(self):
+        self.__stop_event.clear()
+        self.__display_thread = threading.Thread(target=self.__display_loop)
+        self.__input_thread = threading.Thread(target=self.__input_loop)
+        self.__display_thread.start()
+        self.__input_thread.start()
+
+    def exit(self):
         self.__pause()
-        self.__display_thread.join()
-        self.__input_thread.join()
-        self._BaseView__controller.exit()
+        if threading.current_thread() != self.__display_thread:
+            self.__display_thread.join()
+        if threading.current_thread() != self.__input_thread:
+            self.__input_thread.join()

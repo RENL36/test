@@ -38,7 +38,7 @@ class MenuController:
         """
         match MenuOptions(option):
             case MenuOptions.EXIT:
-                self.exit_game()
+                self.exit()
             case MenuOptions.SETTINGS:
                 SettingsMenu(self.settings)
                 self.call_menu()
@@ -57,7 +57,7 @@ class MenuController:
                 # TODO: Implement game save
                 pass
     
-    def exit_game(self) -> None:
+    def exit(self) -> None:
         """
         Exits the game.
         
@@ -72,5 +72,5 @@ class MenuController:
         :rtype: None
         """
         self.state = GameState.PLAYING
-        self.__game_controller = GameController(self.settings)
+        self.__game_controller = GameController(self)
         pass

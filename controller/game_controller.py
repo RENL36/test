@@ -2,20 +2,25 @@ from controller.view_controller import ViewController
 from util.map import Map
 from util.settings import Settings
 from util.state_manager import MapType
+import typing
+if typing.TYPE_CHECKING:
+    from controller.menu_controller import MenuController
 
 class GameController:
     """This module is responsible for controlling the game."""
 
-    def __init__(self, settings: Settings) -> None:
+    def __init__(self, menu_controller: 'MenuController') -> None:
         """
         Initializes the GameController with the given settings.
 
-        :param settings: The settings for the game.
-        :type settings: Settings
+        :param menu_controller: The menu controller.
+        :type menu_controller: MenuController
         """
-        self.settings: Settings = settings
+        self.__menu_controller: 'MenuController' = menu_controller
+        self.settings: Settings = self.__menu_controller.settings
         self.__map: Map = self.__generate_map()
-        self.__view_controller: ViewController = ViewController(self.__map, self.settings)
+        self.__view_controller: ViewController = ViewController(self)
+        self.__running: bool = False
     
     def __generate_map(self) -> Map:
         """
@@ -45,3 +50,25 @@ class GameController:
                 villager.set_coordinate(coordinate)
                 map_generation.add(villager, coordinate)
         return map_generation
+
+    def get_map(self) -> Map:
+        """
+        Returns the map.
+
+        :return: The map.
+        :rtype: Map
+        """
+        return self.__map
+
+    def start(self) -> None:
+        """Starts the game."""
+        self.__running = True
+    
+    def pause(self) -> None:
+        """Pauses the game."""
+        self.__running = False
+    
+    def exit(self) -> None:
+        """Exits the game."""
+        self.__running = False
+        self.__menu_controller.exit()
