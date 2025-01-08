@@ -119,7 +119,7 @@ class Command(ABC):
         :type command_list: list
         """
         for command in command_list:
-            if command.get_entity() == self.__entity and not (command.get_process() = Process.SPAWN):
+            if command.get_entity() == self.__entity and not (command.get_process() == Process.SPAWN):
                 if command.get_process() == Process.COLLECT or command.get_process() == Process.BUILD:
                     raise ValueError("Entity is already collecting or building.")
                 if (command.get_process() == Process.ATTACK or command.get_process() == Process.MOVE) and command.get_process() == self.__process:
