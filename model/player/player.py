@@ -4,7 +4,9 @@ from model.resources.wood import Wood
 from model.resources.resource import Resource
 from model.units.unit import Unit
 from model.buildings.building import Building
-from typing import Set
+from typing import Set, TYPE_CHECKING
+if TYPE_CHECKING:
+    from controller.command import CommandManager
 
 class Player:
     """This class represents the player (AI) in the game."""
@@ -25,6 +27,7 @@ class Player:
         self.__unit_count: int = 0
         self.__buildings: Set[Building] = set()
         self.__max_population: int = 0
+        self.__command_manager: 'CommandManager' = None
     
     def get_name(self) -> str:
         """
@@ -168,3 +171,21 @@ class Player:
         :rtype: int
         """
         return self.__max_population
+    
+    def get_command_manager(self) -> 'CommandManager':
+        """
+        Returns the command manager of the player.
+
+        :return: The command manager.
+        :rtype: CommandManager
+        """
+        return self.__command_manager
+    
+    def set_command_manager(self, command_manager: 'CommandManager') -> None:
+        """
+        Sets the command manager of the player.
+
+        :param command_manager: The command manager to set.
+        :type command_manager: CommandManager
+        """
+        self.__command_manager = command_manager

@@ -3,9 +3,10 @@ from util.map import Map
 from util.settings import Settings
 from util.state_manager import MapType
 import typing
+from controller.command import CommandManager, Command, Process
+from model.player.player import Player
 if typing.TYPE_CHECKING:
     from controller.menu_controller import MenuController
-
 class GameController:
     """This module is responsible for controlling the game."""
 
@@ -21,6 +22,8 @@ class GameController:
         self.__map: Map = self.__generate_map()
         self.__view_controller: ViewController = ViewController(self)
         self.__running: bool = False
+        self.__command_list: list[Command] = []
+        self.__players: list[Player] = []
     
     def __generate_map(self) -> Map:
         """
@@ -72,3 +75,23 @@ class GameController:
         """Exits the game."""
         self.__running = False
         self.__menu_controller.exit()
+
+    # TODO: Generate list of players and their units/buildings.
+    def update(self) -> None:
+        """
+        Update the game state.
+        """
+        for command in self.__command_list:
+            command.run_command()
+        self.__command_list.clear()
+
+    def __assign_command_manager(self) -> None:
+        """
+        Assign a command manager to all player.
+
+        :param command_manager: The command manager to assign.
+        :type command_manager: CommandManager
+        """
+        for player in self.__players:
+            player.set_command_manager(CommandManager(self.__map, player, self.settings.fps, self.__command_list))
+
