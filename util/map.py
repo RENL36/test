@@ -169,7 +169,7 @@ class Map():
     
     def get_from_to(self, from_coord: Coordinate, to_coord: Coordinate) -> 'Map':
         """
-        Get the map from a certain coordinate to another as a new Map.
+        Get the map from a certain coordinate to another as a new Map with size based on the range between coordinates.
 
         :param from_coord: The starting coordinate.
         :type from_coord: Coordinate
@@ -178,13 +178,14 @@ class Map():
         :return: A new map from the starting coordinate to the ending coordinate.
         :rtype: Map
         """
-        map = Map(self.get_size())
+        new_size = max(to_coord.get_x() - from_coord.get_x(), to_coord.get_y() - from_coord.get_y())
+        new_map = Map(new_size)
         for x in range(from_coord.get_x(), to_coord.get_x() + 1):
             for y in range(from_coord.get_y(), to_coord.get_y() + 1):
                 obj = self.get(Coordinate(x, y))
                 if obj is not None:
-                    map.__force_add(obj, Coordinate(x, y))
-        return map
+                    new_map.__force_add(obj, Coordinate(x - from_coord.get_x(), y - from_coord.get_y()))
+        return new_map
     
     def get_map_from_to(self, from_coord: Coordinate, to_coord: Coordinate) -> defaultdict[Coordinate, GameObject]:
         """
@@ -223,20 +224,11 @@ class Map():
                 result[x][y] = self.get(Coordinate(x, y))
         return result
     
-    def __repr__(self):
+    def tabler_str(self) -> str:
         """
-        Get the string representation of the map for testing purposes.
+        Get the string representation of the map in tabler format.
 
-        :return: The string representation of the map.
-        :rtype: str
-        """
-        return f"smatrix({repr(self.get_map())})"
-    
-    def __str__(self) -> str:
-        """
-        Get the matrix of the map with table-like borders.
-
-        :return: The matrix of the map as a string.
+        :return: The matrix of the map as a string in tabler format.
         :rtype: str
         """
         horizontal_line = lambda length: "┌" + "┬".join(["─" * 3] * length) + "┐"
@@ -244,13 +236,45 @@ class Map():
         bottom_line = lambda length: "└" + "┴".join(["─" * 3] * length) + "┘"
         
         rows = [horizontal_line(self.get_size())]
-        for x in range(self.get_size()):
+        for y in range(self.get_size()):
             row = []
-            for y in range(self.get_size()):
+            for x in range(self.get_size()):
                 object = self.get(Coordinate(x, y))
                 row.append(f" {object.get_letter() if object is not None else ' '} ")
             rows.append("│" + "│".join(row) + "│")
             if x < self.get_size() - 1:
                 rows.append(middle_line(self.get_size()))
         rows.append(bottom_line(self.get_size()))
+        return "\n".join(rows)
+    
+    def __str__(self) -> str:
+        """
+        Get the string representation of the map.
+
+        :return: The matrix of the map as a string.
+        :rtype: str
+        """
+        rows = []
+        for y in range(self.get_size()):
+            row = []
+            for x in range(self.get_size()):
+                obj = self.get(Coordinate(x, y))
+                row.append(obj.get_letter() if obj else '·')
+            rows.append("".join(row))
+        return "\n".join(rows)
+    
+    def __repr__(self) -> str:
+        """
+        Get the string representation of the map for testing purposes.
+
+        :return: The string representation of the map.
+        :rtype: str
+        """
+        rows = []
+        for y in range(self.get_size()):
+            row = []
+            for x in range(self.get_size()):
+                obj = self.get(Coordinate(x, y))
+                row.append(obj.get_letter() if obj else '·')
+            rows.append("".join(row))
         return "\n".join(rows)

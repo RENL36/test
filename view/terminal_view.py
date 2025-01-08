@@ -1,0 +1,205 @@
+from util.map import Map
+from view.base_view import BaseView
+from blessed import Terminal
+from util.coordinate import Coordinate
+import threading, time
+import typing
+if typing.TYPE_CHECKING:
+    from controller.view_controller import ViewController
+
+# NOTE: On Terminal, the first line is ALWAYS HIDDEN. So the first line showing is actually the 2nd line.
+# The same goes for the last line: the last line "n" is actually the line "n+1".
+#
+# Example:
+# [1] 0 > hidden to keep height = 4 and because you wrote on line 4
+# [2] 1 >
+# [3] 2 > (3,1)
+# [4] 3 > (3,1)
+# [5] 4 > Bottom is here
+
+class TerminalView(BaseView):
+    """
+    Terminal view for the game. It's used to display the game map and allow the player to navigate it using ZQSD and the arrow keys.
+    Print the map in the Terminal depending on the player's position and the size of the viewport.
+    Automatically update each tick.
+    """
+
+    def __init__(self, controller: 'ViewController') -> None:
+        """Initialize the menu view."""
+        super().__init__(controller)
+        self.__terminal = Terminal()
+        self.__from_coord = Coordinate(0, 0)
+        self.__to_coord = Coordinate(0, 0)
+        self.__stop_event = threading.Event()
+
+        self.__size()
+        self.__map: Map = self._BaseView__controller.get_map()
+
+        self.__display_thread = threading.Thread(target=self.__display_loop)
+        self.__input_thread = threading.Thread(target=self.__input_loop)
+    
+    def show(self) -> None:
+        """Start the display and input threads."""
+        self.__stop_event.clear()
+        self.__display_thread.start()
+        self.__input_thread.start()
+    
+    def __size(self) -> None:
+        """
+        Take care of the fact that the first line is always hidden and the last line is the n+1 line.
+        """
+        self.__terminal_width = self.__terminal.width
+        self.__terminal_height = self.__terminal.height - 1
+
+    def __str_frame(self):
+        """
+        Using "┌", "┐", "└", "┘", "─" and "│" characters, create a frame with the size of the terminal or the map, whichever is smaller.
+        The frame is used to separate the map from the text.
+        """
+        frame_width = min(self.__terminal_width, self.__map.get_size() + 2)
+        frame_height = min(self.__terminal_height, self.__map.get_size() + 2)
+
+        frame = []
+        frame.append("┌" + "─" * (frame_width - 2) + "┐")
+        for _ in range(frame_height - 2):
+            frame.append("│" + " " * (frame_width - 2) + "│")
+        frame.append("└" + "─" * (frame_width - 2) + "┘")
+        return frame
+
+    def __str_map(self) -> list[str]:
+        """
+        Print the map in the terminal using the string representation of the Map object.
+        Using the __from_coord coordinate and the self.__terminal_width and self.__terminal_height, calculate the from and to coordinates to print the map.
+        Use the method Map.get_from_to(from_coord, to_coord) to get the map part to print.
+        Consider the fact that the map is displayed inside the frame, so the map is shifted by 1 to the left, 1 to the top, 1 to the right and 1 to the bottom.
+        """
+        map_width = min(self.__terminal_width - 2, self.__map.get_size())
+        map_height = min(self.__terminal_height - 2, self.__map.get_size())
+        self.__to_coord = self.__from_coord + Coordinate(map_width, map_height)
+        self.__view = self.__map.get_from_to(self.__from_coord, self.__to_coord)
+        map_lines = str(self.__view).split("\n")
+        cropped_lines = [line[:map_width] for line in map_lines[:map_height]]
+        return cropped_lines
+    
+    def __colored_line(self, line: str, frame_line: str) -> str:
+        """
+        Color the map elements: uppercase letters in red and bold, lowercase letters in blue, and hide empty spaces.
+        Include the frame in the colored line.
+        """
+        colored_line = ""
+        for char in line:
+            if char.isupper():
+                colored_line += self.__terminal.bold_red(char)
+            elif char.islower():
+                colored_line += self.__terminal.blue(char)
+            elif char == '·':
+                colored_line += ' '
+            else:
+                colored_line += char
+        return frame_line[:1] + colored_line + self.__terminal.normal + frame_line[1 + len(line):]
+    
+    def __add_coord(self, line: list[str]) -> list[str]:
+        """
+        Add the top left coordinate on the top left corner of the frame.
+        Add the bottom right coordinate on the bottom right corner of the frame.
+        """
+        top_left = f"({self.__from_coord.get_x()}, {self.__from_coord.get_y()})"
+        bottom_right_coord = self.__to_coord - 1
+        bottom_right = f"({bottom_right_coord.get_x()}, {bottom_right_coord.get_y()})"
+        line[0] = f"{top_left}{line[0][len(top_left):]}"
+        line[-1] = f"{line[-1][:len(line[-1]) - len(bottom_right)]}{bottom_right}"
+        return line
+
+    def __display_loop(self) -> None:
+        """
+        Display the map in the terminal and update it each tick (depending on the FPS).
+        The display width and height are set to the terminal size
+        Display is composed of 2 layers: the map and the text ; they don't overlap.
+        """
+        with self.__terminal.fullscreen(), self.__terminal.cbreak(), self.__terminal.hidden_cursor():
+            while not self.__stop_event.is_set():
+                self.__size()
+                if self.__terminal_width < 10 or self.__terminal_height < 10:
+                    print(self.__terminal.clear(), end="")
+                    print(self.__terminal.bold_red("Error: Terminal size is too small. Please resize the terminal."))
+                    self.__terminal.flush()
+                    time.sleep(1)
+                    continue
+
+                frame = self.__str_frame()
+                map_part = self.__str_map()
+                print(self.__terminal.clear(), end="")
+                for i, line in enumerate(map_part[:min(len(map_part), self.__terminal_height - 2)]):
+                    frame[i + 1] = self.__colored_line(line, frame[i + 1])
+                frame = self.__add_coord(frame)
+                print("\n".join(frame))
+                self.__terminal.flush()
+                time.sleep(1 / self._BaseView__controller.get_settings().fps.value)
+
+    def __input_loop(self) -> None:
+        """
+        Handle the user input to move the viewport.
+        
+        ZQSD or WASD or arrow keys are used to move the viewport.
+        MAJ + ZQSD or MAJ + WASD or MAJ + arrow keys are used to move the viewport by 5 cells.
+        P is used to pause the game.
+        TAB is used to pause the game and display the stats menu.
+        ECHAP is used to exit the game.
+        F12 is used to take switch view.
+
+        :return: None
+        """
+        # TODO: Press two keys at the same time
+        # TODO: Press a key and keep it pressed
+        while not self.__stop_event.is_set():
+            key = self.__terminal.inkey()
+            if key in ["z", "w"] or key.code == self.__terminal.KEY_UP:
+                self.__from_coord += Coordinate(0, -1)
+            elif key == "s" or key.code == self.__terminal.KEY_DOWN:
+                self.__from_coord += Coordinate(0, 1)
+            elif key in ["q", "a"] or key.code == self.__terminal.KEY_LEFT:
+                self.__from_coord += Coordinate(-1, 0)
+            elif key == "d" or key.code == self.__terminal.KEY_RIGHT:
+                self.__from_coord += Coordinate(1, 0)
+            elif key in ["Z", "W"]:
+                self.__from_coord += Coordinate(0, -5)
+            elif key == "S":
+                self.__from_coord += Coordinate(0, 5)
+            elif key in ["Q", "A"]:
+                self.__from_coord += Coordinate(-5, 0)
+            elif key == "D":
+                self.__from_coord += Coordinate(5, 0)
+            elif key in ["p", "P"]:
+                self.__pause()
+                self._BaseView__controller.pause()
+            elif key.code == self.__terminal.KEY_TAB:
+                self.__pause()
+                self._BaseView__controller.pause()
+                self._BaseView__controller.display_stats()
+            elif key.code == self.__terminal.KEY_ESCAPE:
+                self.exit()
+                self._BaseView__controller.exit()
+            elif key.code == self.__terminal.KEY_F12:
+                self._BaseView__controller.switch_view()
+
+            self.__from_coord = Coordinate(
+                max(0, min(self.__map.get_size() - self.__terminal_width + 2, self.__from_coord.get_x())),
+                max(0, min(self.__map.get_size() - self.__terminal_height + 2, self.__from_coord.get_y()))
+            )
+
+    def __pause(self):
+        self.__stop_event.set()
+
+    def resume(self):
+        self.__stop_event.clear()
+        self.__display_thread = threading.Thread(target=self.__display_loop)
+        self.__input_thread = threading.Thread(target=self.__input_loop)
+        self.__display_thread.start()
+        self.__input_thread.start()
+
+    def exit(self):
+        self.__pause()
+        if threading.current_thread() != self.__display_thread:
+            self.__display_thread.join()
+        if threading.current_thread() != self.__input_thread:
+            self.__input_thread.join()

@@ -15,7 +15,7 @@ class Settings:
     """
     def __init__(self) -> None:
         """Create a new Settings object with default values."""
-        self.map_type: MapType = MapType.RICH
+        self.map_type: MapType = MapType.TEST
         self.map_size: MapSize = MapSize.SMALL
         self.starting_condition: StartingCondition = StartingCondition.LEAN
         self.fps: int = FPS.FPS_60
