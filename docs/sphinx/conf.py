@@ -25,7 +25,7 @@ autodoc_default_options = {
     'special-members': True,
     'inherited-members': True,
     'show-inheritance': True,
-    'exclude-members': '__dict__, __firstlineno__, __module__, __static_attributes__'
+    'exclude-members': '__dict__, __firstlineno__, __module__, __static_attributes__, __weakref__, __annotations__, __abstractmethods__, __abc_impl'
 }
 
 # -- Options for napoleon extension ------------------------------------------
