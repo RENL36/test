@@ -198,8 +198,13 @@ class TerminalView(BaseView):
         self.__input_thread.start()
 
     def exit(self):
-        self.__pause()
-        if threading.current_thread() != self.__display_thread:
+        """Stop terminal view threads."""
+        self.__stop_event.set()  # Arrête les threads
+
+        # Vérifie si le thread d'affichage est en cours d'exécution avant de le rejoindre
+        if threading.current_thread() != self.__display_thread and self.__display_thread.is_alive():
             self.__display_thread.join()
-        if threading.current_thread() != self.__input_thread:
+
+        # Vérifie si le thread d'entrée est en cours d'exécution avant de le rejoindre
+        if threading.current_thread() != self.__input_thread and self.__input_thread.is_alive():
             self.__input_thread.join()
