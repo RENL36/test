@@ -1,6 +1,9 @@
 from collections import defaultdict
 from model.game_object import GameObject
 from util.coordinate import Coordinate
+import typing
+if typing.TYPE_CHECKING:
+    from model.player.player import Player
 
 """
 This file contains the Map class which is used to represent the map of the game and the methods associated with it.
@@ -278,3 +281,62 @@ class Map():
                 row.append(obj.get_letter() if obj else '·')
             rows.append("".join(row))
         return "\n".join(rows)
+    
+    def path_finding(self, start: Coordinate, end: Coordinate) -> list[Coordinate]:
+        """
+        Find the path for a unit to go from start to end.
+        
+        :param start: The starting coordinate.
+        :type start: Coordinate
+        :param end: The ending coordinate.
+        :type end: Coordinate
+        :return: A list of coordinates representing the path from start to end.
+        :rtype: list[Coordinate]
+        """
+    
+    def path_finding_avoid(self, start: Coordinate, end: Coordinate, avoid_from: Coordinate, avoid_to: Coordinate) -> list[Coordinate]:
+        """
+        Find the path for a unit to go from start to end while avoiding a specific area.
+
+        :param start: The starting coordinate.
+        :type start: Coordinate
+        :param end: The ending coordinate.
+        :type end: Coordinate
+        :param avoid_from: The starting coordinate of the area to avoid.
+        :type avoid_from: Coordinate
+        :param avoid_to: The ending coordinate of the area to avoid.
+        :type avoid_to: Coordinate
+        :return: A list of coordinates representing the path from start to end while avoiding the specified area.
+        :rtype: list[Coordinate]
+        """
+    def find_nearest_empty_spot(self, coordinate: Coordinate) -> Coordinate:
+        """
+        Find the nearest empty spot to a given coordinate.
+
+        :param coordinate: The starting coordinate.
+        :type coordinate: Coordinate
+        :return: The nearest empty coordinate.
+        :rtype: Coordinate
+        """
+    def find_nearest_object(self, coordinate: Coordinate, object_type: type) -> Coordinate:
+        """
+        Find the nearest object of the same type to a given coordinate.
+
+        :param coordinate: The starting coordinate.
+        :type coordinate: Coordinate
+        :param object_type: The type of the object to find.
+        :type object_type: type
+        :return: The coordinate of the nearest object of the same type.
+        :rtype: Coordinate
+        """
+    def find_nearest_enemy(self, coordinate: Coordinate, player: 'Player') -> Coordinate:
+        """
+        Find the nearest enemy to a given coordinate.
+
+        :param coordinate: The starting coordinate.
+        :type coordinate: Coordinate
+        :param player: The player to find the nearest enemy of.
+        :type player: Player
+        :return: The coordinate of the nearest enemy.
+        :rtype: Coordinate
+        """ 

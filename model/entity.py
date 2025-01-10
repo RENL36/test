@@ -2,6 +2,8 @@ from model.game_object import GameObject
 import typing
 if typing.TYPE_CHECKING:
     from model.resources.resource import Resource
+    from model.player.player import Player
+    from controller.command import Task
 
 class Entity(GameObject):
     """This class represents the entities (Units and Buildings) on the map."""
@@ -24,6 +26,8 @@ class Entity(GameObject):
         super().__init__(name, letter, hp)
         self.__cost: dict['Resource', int] = cost
         self.__spawning_time: int = spawning_time
+        self.__player: 'Player' = None
+        self.__task: 'Task' = None
     
     def get_cost(self) -> dict['Resource', int]:
         """
@@ -42,3 +46,39 @@ class Entity(GameObject):
         :rtype: int
         """
         return self.__spawning_time
+    def get_player(self) -> 'Player':
+        """
+        Returns the player associated with the entity.
+
+        :return: The player associated with the entity.
+        :rtype: Player
+        """
+        return self.__player
+    def set_player(self, player: 'Player') -> None:
+        """
+        Sets the player associated with the entity.
+
+        :param player: The player to associate with the entity.
+        :type player: Player
+        """
+        self.__player = player
+    
+    def get_task(self) -> 'Task':
+        """
+        Returns the task associated with the entity.
+
+        :return: The task associated with the entity.
+        :rtype: Task
+        """
+        return self.__task
+    
+    def set_task(self, task: 'Task') -> None:
+        """
+        Sets the task associated with the entity.
+
+        :param task: The task to associate with the entity.
+        :type task: Task
+        """
+        self.__task = task
+    
+    

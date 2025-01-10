@@ -6,7 +6,7 @@ from model.units.unit import Unit
 from model.buildings.building import Building
 from typing import Set, TYPE_CHECKING
 if TYPE_CHECKING:
-    from controller.command import CommandManager
+    from controller.command import CommandManager, TaskManager
 
 class Player:
     """This class represents the player (AI) in the game."""
@@ -22,12 +22,13 @@ class Player:
         """
         self.__name: str = name
         self.__color: str = color
-        self.__resource: dict[Resource, int] = {Food: 0, Gold: 0, Wood: 0}
+        self.__resource: dict[Resource, int] = {Food(): 0, Gold(): 0, Wood(): 0}
         self.__units: Set[Unit] = set()
         self.__unit_count: int = 0
         self.__buildings: Set[Building] = set()
         self.__max_population: int = 0
         self.__command_manager: 'CommandManager' = None
+        self.__task_manager: 'TaskManager' = None
     
     def get_name(self) -> str:
         """
@@ -65,7 +66,7 @@ class Player:
         :param amount: The amount of the resource to add.
         :type amount: int
         """
-        if resource in self.__resource:
+        if isinstance(resource, Food) or isinstance(resource, Gold) or isinstance(resource, Wood):
             self.__resource[resource] += amount
         
     def check_consume(self, resource: Resource, amount: int) -> bool:
@@ -189,3 +190,41 @@ class Player:
         :type command_manager: CommandManager
         """
         self.__command_manager = command_manager
+    
+    def set_max_population(self, max_population: int) -> None:
+        """
+        Sets the maximum population of the player.
+
+        :param max_population: The maximum population to set.
+        :type max_population: int
+        """
+        self.__max_population = max_population
+    
+    def get_task_manager(self) -> 'TaskManager':
+        """
+        Returns the task manager of the player.
+
+        :return: The task manager.
+        :rtype: TaskManager
+        """
+        return self.__task_manager
+    
+    def set_task_manager(self, task_manager: 'TaskManager') -> None:
+        """
+        Sets the task manager of the player.
+
+        :param task_manager: The task manager to set.
+        :type task_manager: TaskManager
+        """
+        self.__task_manager = task_manager
+        
+    def __eq__(self, other: 'Player') -> bool:
+        """
+        Compares the player to another player.
+
+        :param other: The other player to compare.
+        :type other: Player
+        :return: True if the players are equal, False otherwise.
+        :rtype: bool
+        """
+        return self.__name == other.get_name() and self.__color == other.get_color()

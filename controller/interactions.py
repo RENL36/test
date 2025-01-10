@@ -6,6 +6,7 @@ from util.coordinate import Coordinate
 from model.resources.resource import Resource
 from model.units.villager import Villager
 from model.buildings.building import Building
+from model.entity import Entity
 
 
 class Interactions:
@@ -20,7 +21,7 @@ class Interactions:
         :param coordinate: The coordinate where to place the object.
         :type coordinate: Coordinate
         """
-        self.__map.add(object)
+        self.__map.add(object, coordinate)
         object.set_coordinate(coordinate)
     
     def remove_object(self, object: GameObject) -> None:
@@ -29,7 +30,7 @@ class Interactions:
         :param object: The object to remove from the map.
         :type object: GameObject
         """
-        self.__map.remove(object)
+        self.__map.remove(object.get_coordinate())
         object.set_coordinate(None)
         object.set_alive(False)
     
@@ -63,6 +64,9 @@ class Interactions:
 
         if not target.is_alive():
             self.remove_object(target) # Remove the target from the map
+        if isinstance(target, Building) and target.is_population_increase():
+            owner = target.get_player()
+            owner.set_max_population(owner.get_max_population() - target.get_capacity_increase())
     
     def collect_resource(self, villager: Villager, resource_coord: Coordinate, amount: int) -> None:
         """
@@ -109,4 +113,16 @@ class Interactions:
         
         for resource, amount in villager.empty_resource().items():
             player.collect(resource, amount)
-    
+    def link_owner(self, player: Player, entity: Entity) -> None:
+        """
+        Link an owner to an entity.
+        :param player: The player that owns the entity.
+        :type player: Player
+        :param entity: The entity that is owned.
+        :type entity: Entity
+        """
+        entity.set_player(player)
+        if isinstance(entity, Building):
+            player.add_building(entity)
+        if isinstance(entity, Unit):
+            player.add_unit(entity)
