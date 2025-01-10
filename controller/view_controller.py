@@ -4,8 +4,7 @@ from util.settings import Settings
 from view.base_view import BaseView
 from view.terminal_view import TerminalView
 from view.two_point_five_view.view2_5d import View2D5
-import os , typing , webbrowser
-
+import os, typing, webbrowser
 
 if typing.TYPE_CHECKING:
     from controller.game_controller import GameController
@@ -15,23 +14,25 @@ class ViewController:
         """Initialize the view controller."""
         self.__game_controller: 'GameController' = game_controller
 
-        
-       
+        # Initialize the terminal view
+        self.__terminal_view = TerminalView(self)
 
-        # Initialiser la vue 2.5D
-        self.__view_2_5d: View2D5 = View2D5(self.get_map())
+        # Initialize the 2.5D view
+        self.__view_2_5d = View2D5(self.get_map())
 
-        # Définir la vue actuelle comme la vue terminale
-        self.__current_view: BaseView = TerminalView(self)
+        # Set the current view to TerminalView
+        self.__current_view: BaseView = self.__terminal_view
 
-        # Lancer les vues
+        # Start the initial view
         self.start_view()
 
     def start_view(self) -> None:
         """Start the current view."""
-        # Afficher la vue terminale et 2.5D en mode debug (les deux en parallèle)
-        threading.Thread(target=self.__terminal_view.show, daemon=True).start()
-        threading.Thread(target=self.__view_2_5d.run, daemon=True).start()
+        try:
+            # Start the current view in a separate thread
+            threading.Thread(target=self.__current_view.show, daemon=True).start()
+        except AttributeError as e:
+            print(f"Error starting the view: {e}")
 
     def get_map(self) -> Map:
         """Return the map."""
@@ -53,33 +54,30 @@ class ViewController:
         """Switch between TerminalView and 2.5D view."""
         try:
             if isinstance(self.__current_view, TerminalView):
-                # Arrêter proprement la vue terminale
+                # Stop the terminal view
                 print("Switching from TerminalView to View2D5...")
-                self.__current_view.exit()  
-                
-                # Importer et lancer la vue 2.5D
-                from view.two_point_five_view.view2_5d import View2D5
-                self.__current_view = View2D5(self.get_map())
-                self.__current_view.show()
+                self.__current_view.exit()
+
+                # Switch to the 2.5D view
+                self.__current_view = self.__view_2_5d
+                threading.Thread(target=self.__current_view.show, daemon=True).start()
             elif isinstance(self.__current_view, View2D5):
-                # Arrêter proprement la vue 2.5D
+                # Stop the 2.5D view
                 print("Switching from View2D5 to TerminalView...")
-                self.__current_view.exit() 
-                
-                # Revenir à la vue Terminal
-                self.__current_view = TerminalView(self)
-                self.__current_view.show()
+                self.__current_view.exit()
+
+                # Switch to the terminal view
+                self.__current_view = self.__terminal_view
+                threading.Thread(target=self.__current_view.show, daemon=True).start()
             else:
                 raise NotImplementedError("The current view is not supported for switching.")
         except Exception as e:
             print(f"Error during view switch: {e}")
-            raise
 
     def display_stats(self) -> None:
         """
         Pause the game, and create an HTML webpage that shows the current map of the game.
         On hover of a GameObject, show the stats of the GameObject.
-        For example, if the GameObject is a Unit, shows it's type, health, what it's carrying, etc.
         """
         self.pause()
         webpage = f"""
