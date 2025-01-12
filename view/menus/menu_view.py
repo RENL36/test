@@ -24,11 +24,11 @@ class MenuView:
         """
         match game_state:
             case GameState.NOT_STARTED:
-                return [ MenuOptions.START_GAME, MenuOptions.LOAD_GAME, MenuOptions.SETTINGS, MenuOptions.EXIT ]
+                return [ MenuOptions.START_GAME, MenuOptions.LOAD_GAME, MenuOptions.SETTINGS, MenuOptions.VIEW_2_5D, MenuOptions.EXIT ]
             case GameState.PAUSE:
-                return [ MenuOptions.RESUME, MenuOptions.SAVE_GAME, MenuOptions.SETTINGS, MenuOptions.EXIT ]
+                return [ MenuOptions.RESUME, MenuOptions.SAVE_GAME, MenuOptions.SETTINGS, MenuOptions.VIEW_2_5D, MenuOptions.EXIT ]
             case GameState.GAME_OVER:
-                return [ MenuOptions.RESTART, MenuOptions.LOAD_GAME, MenuOptions.SETTINGS, MenuOptions.EXIT ]
+                return [ MenuOptions.RESTART, MenuOptions.LOAD_GAME, MenuOptions.SETTINGS, MenuOptions.VIEW_2_5D, MenuOptions.EXIT ]
 
     def show(self, game_state: GameState) -> int:
         """
@@ -47,12 +47,18 @@ class MenuView:
                 print(self.term.center(self.term.bold_red("AIge of EmpAIres")))
 
                 for i, option in enumerate(options):
-                    option_str = option.name.replace("_", " ").title()
-                    y = 3 + i
-                    if i == self.current_option:
-                        print(self.term.on_black(self.term.white(f"→ {option_str}")))
+                    if option.name == 'VIEW_2_5D':
+                        if i == self.current_option:
+                            print(self.term.on_black(self.term.white(f"→ View 2.5D")))
+                        else:
+                            print(f"  View 2.5D")
                     else:
-                        print(f"  {option_str}")
+                        option_str = option.name.replace("_", " ").title()
+                        y = 3 + i
+                        if i == self.current_option:
+                            print(self.term.on_black(self.term.white(f"→ {option_str}")))
+                        else:
+                            print(f"  {option_str}")
 
                 key = self.term.inkey()
 
