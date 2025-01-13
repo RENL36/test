@@ -28,7 +28,7 @@ class View2_5D:
         # self.camera = Camera(self.width, self.height)
         # self.renderer = Renderer(self.screen, tile_size=64)
         self.tile_manager = TileManager()
-
+        
     def render_map(self):
         """
         Render the map with objects and textures.
@@ -130,5 +130,5 @@ class View2_5D:
             self.clock.tick(60)
 
         pygame.quit()
-
-      
+        
+    
