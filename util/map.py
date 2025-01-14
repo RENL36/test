@@ -329,14 +329,24 @@ class Map():
         :return: The coordinate of the nearest object of the same type.
         :rtype: Coordinate
         """
-    def find_nearest_enemy(self, coordinate: Coordinate, player: 'Player') -> Coordinate:
+    def find_nearest_enemies(self, coordinate: Coordinate, player: 'Player') -> list[Coordinate]:
         """
-        Find the nearest enemy to a given coordinate.
+        Find the nearest enemies to a given coordinate.
 
         :param coordinate: The starting coordinate.
         :type coordinate: Coordinate
         :param player: The player to find the nearest enemy of.
         :type player: Player
-        :return: The coordinate of the nearest enemy.
-        :rtype: Coordinate
+        :return: A list of coordinates of the nearest enemies.
+        :rtype: list[Coordinate]
         """ 
+    def capture(self) -> 'Map':
+        """
+        Copy the map.
+
+        :return: A copy of the map.
+        :rtype: Map
+        """
+        new_map = Map(self.__size)
+        new_map.__matrix = self.__matrix.copy()
+        return new_map

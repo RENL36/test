@@ -702,7 +702,7 @@ class TaskManager:
     
     def execute_tasks(self) -> None:
         """
-        Executes the tasks in the task list.
+        Executes all assigned tasks in 
         """
         for unit in self.__command_manager.get_player().get_units():
                 if unit.get_task() is not None:

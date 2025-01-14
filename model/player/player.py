@@ -7,6 +7,7 @@ from model.buildings.building import Building
 from typing import Set, TYPE_CHECKING
 if TYPE_CHECKING:
     from controller.command import CommandManager, TaskManager
+    from controller.AI_controller import AI
 
 class Player:
     """This class represents the player (AI) in the game."""
@@ -29,6 +30,37 @@ class Player:
         self.__max_population: int = 0
         self.__command_manager: 'CommandManager' = None
         self.__task_manager: 'TaskManager' = None
+        self.__ai: 'AI' = None
+    
+    def get_ai(self) -> 'AI':
+        """
+        Returns the AI of the player.
+
+        :return: The AI.
+        :rtype: AI
+        """
+        return self.__ai
+    
+    def set_ai(self, ai: 'AI') -> None:
+        """
+        Sets the AI of the player.
+
+        :param ai: The AI to set.
+        :type ai: AI
+        """
+        self.__ai = ai
+
+    def capture(self)-> 'Player':
+        """
+        Capture the player current state
+        """
+        player: Player = Player(self.__name, self.__color)
+        player.__resource = self.__resource.copy()
+        player.__units = self.__units.copy()
+        player.__unit_count = self.__unit_count
+        player.__buildings = self.__buildings.copy()
+        player.__max_population = self.__max_population
+        return player
     
     def get_name(self) -> str:
         """

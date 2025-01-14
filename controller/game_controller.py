@@ -1,4 +1,5 @@
 from controller.view_controller import ViewController
+from controller.AI_controller import AIController, AI
 from util.map import Map
 from util.settings import Settings
 from util.state_manager import MapType
@@ -25,8 +26,10 @@ class GameController:
         self.__command_list: list[Command] = []
         self.__players: list[Player] = []
         self.__map: Map = self.__generate_map()
+        self.__ai_controller: AIController = AIController(self)
         self.__view_controller: ViewController = ViewController(self)
         self.__running: bool = False
+        self.__ai_controller.__ai_loop()
         self.game_loop()
         
 
@@ -41,6 +44,7 @@ class GameController:
             self.get_players().append(player)
             player.set_command_manager(CommandManager(map, player, self.settings.fps.value, self.__command_list))
             player.set_task_manager(TaskManager(player.get_command_manager()))
+
         
             
 
@@ -143,7 +147,6 @@ class GameController:
             """
             self.start()
             while self.__running:
-                ##self.ai_controller.update() AI getting the map and take decision
                 self.load_task()
                 self.update() 
                 # Cap the loop time to ensure it doesn't run faster than the desired FPS
