@@ -10,8 +10,8 @@ class TileManager:
         Initialise le gestionnaire de tuiles.
         """
         self.textures = {
-            # "grass": pygame.transform.scale(pygame.image.load("assets/terrain/grass.png"), (64, 64)),
-            # "water": pygame.transform.scale(pygame.image.load("assets/terrain/water.png"), (64, 64)),
+            # "grass": pygame.transform.scale(pygame.image.load("graphics/grass.png"), (64, 64)),
+            # "water": pygame.transform.scale(pygame.image.load("graphics/water.png"), (64, 64)),
             "town_center": pygame.transform.scale(pygame.image.load("graphics/town_center.png"), (64, 64)),
             "villager": pygame.transform.scale(pygame.image.load("graphics/villager.png"), (48, 48)),
             # "grass_tiles": pygame.transform.scale(pygame.image.load("assets/terrain/grass11.png"), (800, 600)),
