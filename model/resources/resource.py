@@ -62,3 +62,25 @@ class Resource(GameObject):
         :rtype: int
         """
         return hash(super().get_name())
+    
+    def __eq__(self, other: object) -> bool:
+        """
+        Checks if the resource is equal to another resource.
+
+        :param other: The other resource to compare.
+        :type other: object
+        :return: True if the resources are equal, False otherwise.
+        :rtype: bool
+        """
+        if not isinstance(other, Resource):
+            return False
+        return super().get_name() == other.get_name()
+    
+    def __repr__(self) -> str:
+        """
+        Returns the string representation of the resource.
+
+        :return: The string representation of the resource.
+        :rtype: str
+        """
+        return f"{super().get_name()}"

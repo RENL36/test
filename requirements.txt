@@ -1,3 +1,4 @@
+pygame
 sphinx
 sphinx_rtd_theme
 blessed

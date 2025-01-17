@@ -19,13 +19,6 @@ class Process(Enum):
     COLLECT = 3
     DROP = 4
     BUILD = 5
-class SpawningTime(dict[str, int]):
-    """This class is responsible for storing the normal time it takes to spawn an entity ."""
-    def __init__(self) -> None:
-        
-        self["House"] = 25
-        self["Town Center"] = 150  
-        self["Villager"] = 25
 
 class UnitSpawner(dict[str, Unit]):
     """This class is responsible for storing the unit spawner."""
@@ -56,7 +49,13 @@ class Command(ABC):
         self.__convert_coeff: int = convert_coeff
         self.__time: float = 0
         self.__tick: int = 0
-    
+    def get_interactions(self) -> Interactions:
+        """
+        Returns the interactions of the command.
+        :return: The interactions of the command.
+        :rtype: Interactions
+        """
+        return self.__interactions
     def get_tick(self) -> int:
         """
         Returns the tick of the command.
@@ -111,7 +110,13 @@ class Command(ABC):
         :rtype: Player
         """
         return self.__player
-
+    def get_convert_coeff(self) -> int:
+        """
+        Returns the coefficient used to convert time to tick.
+        :return: The coefficient used to convert time to tick.
+        :rtype: int
+        """
+        return self.__convert_coeff
     def push_command_to_list(self, command_list: list['Command']) -> None:
         """
         Pushes the command to the given list.
@@ -170,17 +175,18 @@ class SpawnCommand(Command):
         :type convert_coeff: int
         """
         super().__init__(map, player, building, Process.SPAWN, convert_coeff)
-        self.set_time(SpawningTime()[UnitSpawner()[building.get_name()].get_name])
-        self.set_tick(self.get_time() * convert_coeff)
+        self.set_time(UnitSpawner()[building.get_name()].get_spawning_time())
+        self.set_tick(int(self.get_time() * convert_coeff))
         self.__target_coord = target_coord
         self.__command_list = command_list
+        self.__place_holder: GameObject = GameObject("Place Holder",'x',0)
         super().push_command_to_list(command_list)
 
     def run_command(self):
         """
         Runs the spawn command.
         """
-        if self.get_tick() == self.__convert_coeff * self.get_time():
+        if self.get_tick() == int(self.get_convert_coeff() * self.get_time()):
             if self.get_player().get_unit_count() >= self.get_player().get_max_population():
                 super().remove_command_from_list()
                 raise ValueError("Population limit reached.")
@@ -189,16 +195,15 @@ class SpawnCommand(Command):
                 raise ValueError("Not enough resources.")
             for resource, amount in UnitSpawner()[self.get_entity().get_name()].get_cost().items():
                 self.get_player().consume(resource, amount)
-            place_holder: GameObject = GameObject("Place Holder",'x',0)
-            self.__interactions.place_object(place_holder, self.__target_coord)
+            self.get_interactions().place_object(self.__place_holder, self.__target_coord)
         
         if self.get_tick() > 0:
             self.set_tick(self.get_tick() - 1)
         else:
-            self.__interactions.remove_object(place_holder)
+            self.get_interactions().remove_object(self.__place_holder)
             spawned: Unit = UnitSpawner()[self.get_entity().get_name()]
-            self.__interactions.place_object(spawned, self.__target_coord)
-            self.get_player().add_unit(spawned)
+            self.get_interactions().place_object(spawned, self.__target_coord)
+            self.get_interactions().link_owner(self.get_player(), spawned)
             super().remove_command_from_list(self.__command_list)
 
 class MoveCommand(Command):
@@ -218,7 +223,7 @@ class MoveCommand(Command):
         """
         super().__init__(map, player, unit, Process.MOVE, convert_coeff)
         self.set_time(unit.get_speed())
-        self.set_tick(self.get_time() * convert_coeff)
+        self.set_tick(int(self.get_time() * convert_coeff))
         self.__target_coord = target_coord
         self.__command_list = command_list
         super().push_command_to_list(command_list)
@@ -227,8 +232,8 @@ class MoveCommand(Command):
         """
         Runs the move command.
         """
-        if self.get_tick() == self.__convert_coeff * self.get_time():
-            self.__interactions.move_unit(self.get_entity(), self.__target_coord)
+        if self.get_tick() == int(self.get_convert_coeff() * self.get_time()):
+            self.get_interactions().move_unit(self.get_entity(), self.__target_coord)
         if self.get_tick() > 0:
             self.set_tick(self.get_tick() - 1)
         else:
@@ -253,7 +258,7 @@ class AttackCommand(Command):
         """
         super().__init__(map, player, unit, Process.ATTACK, convert_coeff)
         self.set_time(1)
-        self.set_tick(self.get_time() * convert_coeff)
+        self.set_tick(int(self.get_time() * convert_coeff))
         self.__target_coord = target_coord
         self.__command_list = command_list
         super().push_command_to_list(command_list)
@@ -262,8 +267,8 @@ class AttackCommand(Command):
         """
         Runs the attack command.
         """
-        if self.get_tick() == self.__convert_coeff * self.get_time():
-            self.__interactions.attack(self.get_entity(), self.__target_coord)
+        if self.get_tick() == int(self.get_convert_coeff() * self.get_time()):
+            self.get_interactions().attack(self.get_entity(), self.__target_coord)
         if self.get_tick() > 0:
             self.set_tick(self.get_tick() - 1)
         else:
@@ -288,7 +293,7 @@ class CollectCommand(Command):
         """
         super().__init__(map, player, unit, Process.COLLECT, convert_coeff)
         self.set_time(25.0/60)
-        self.set_tick(self.get_time() * convert_coeff)
+        self.set_tick(int(self.get_time() * convert_coeff))
         self.__target_coord = target_coord
         self.__command_list = command_list
         super().push_command_to_list(command_list)
@@ -300,7 +305,7 @@ class CollectCommand(Command):
         if self.get_tick() > 0:
             self.set_tick(self.get_tick() - 1)
         else:
-            self.__interactions.collect_resource(self.get_entity(), self.__target_coord, 1)
+            self.get_interactions().collect_resource(self.get_entity(), self.__target_coord, 1)
             super().remove_command_from_list(self.__command_list)
 
 class DropCommand(Command):
@@ -321,12 +326,16 @@ class DropCommand(Command):
         :type convert_coeff: int
         """
         super().__init__(map, player, unit, Process.DROP, convert_coeff)
+        self.__target_coord = target_coord
+        self.__command_list = command_list
+        super().push_command_to_list(command_list)
         
     def run_command(self):
         """
         Runs the drop command.
         """
-        self.__interactions.drop_resource(self.get_player(), self.get_entity(), self.__target_coord)
+        self.get_interactions().drop_resource(self.get_player(), self.get_entity(), self.__target_coord)
+        super().remove_command_from_list(self.__command_list)
     
 class BuildCommand(Command):
     """This class is responsible for executing build commands."""
@@ -348,11 +357,13 @@ class BuildCommand(Command):
         :type convert_coeff: int
         """
         super().__init__(map, player, unit, Process.BUILD, convert_coeff)
-        self.set_time(SpawningTime()[building.get_name()])
-        self.set_tick(self.get_time() * convert_coeff)
+        self.set_time(building.get_spawning_time())
+        self.set_tick(int(self.get_time() * convert_coeff))
         self.__building = building
         self.__target_coord = target_coord
         self.__command_list = command_list
+        self.__place_holder: GameObject = GameObject("Place Holder",'x',0)
+        self.__place_holder.set_size(building.get_size())
         super().push_command_to_list(command_list)
 
     def run_command(self):
@@ -363,21 +374,22 @@ class BuildCommand(Command):
             super().remove_command_from_list()
             raise ValueError("Target is out of range.")
         # To do: implement multi-build and another adjacent check
-        if self.get_tick() == self.__convert_coeff * self.get_time():
+        if self.get_tick() == int(self.get_convert_coeff() * self.get_time()):
             if not all(self.get_player().check_consume(resource, amount) for resource, amount in self.__building.get_cost().items()):
-                super().remove_command_from_list()
+                super().remove_command_from_list(self.__command_list)
                 raise ValueError("Not enough resources.")
             for resource, amount in self.__building.get_cost().items():
                 self.get_player().consume(resource, amount)
-            place_holder: GameObject = GameObject("Place Holder",'x',0)
-            self.__interactions.place_object(place_holder, self.__target_coord)
+            self.get_interactions().place_object(self.__place_holder, self.__target_coord)
         
         if self.get_tick() > 0:
             self.set_tick(self.get_tick() - 1)
         else:
-            self.__interactions.remove_object(place_holder)
-            self.__interactions.place_object(self.__building, self.__target_coord)
-            self.get_player().add_building(self.__building)
+            self.get_interactions().remove_object(self.__place_holder)
+            self.get_interactions().place_object(self.__building, self.__target_coord)
+            self.get_interactions().link_owner(self.get_player(), self.__building)
+            if self.__building.is_population_increase():
+                self.get_player().set_max_population(self.get_player().get_max_population() + self.__building.get_capacity_increase())
             super().remove_command_from_list(self.__command_list)
 
 
@@ -398,8 +410,24 @@ class CommandManager:
         self.__player: Player = player
         self.__convert_coeff: int = convert_coeff
         self.__command_list: list[Command] = command_list
+    def get_map(self):
+        """
+        Returns the map where the command will be executed.
+        :return: The map where the command will be executed.
+        :rtype: Map
+        """
+        return self.__map
+    def get_command_list(self) -> list[Command]:
+        """
+        Returns the command list.
+        :return: The command list.
+        :rtype: list
+        """
+        return self.__command_list
+    def get_player(self) -> Player:
+        return self.__player
     
-    def command(self, entity: Entity, process: Process, target_coord: Coordinate, building: Building = None ) -> None:
+    def command(self, entity: Entity, process: Process, target_coord: Coordinate, building: Building = None ) -> Command:
         """
         Creates a command with the given entity, process and target coordinate.
         :param entity: The entity that will execute the command.
@@ -412,16 +440,280 @@ class CommandManager:
         :type building: Building
         """
         if process == Process.SPAWN:
-            SpawnCommand(self.__map, self.__player, entity, target_coord, self.__convert_coeff, self.__command_list)
+            return SpawnCommand(self.__map, self.__player, entity, target_coord, self.__convert_coeff, self.__command_list)
         elif process == Process.MOVE:
-            MoveCommand(self.__map, self.__player, entity, target_coord, self.__convert_coeff, self.__command_list)
+            return MoveCommand(self.__map, self.__player, entity, target_coord, self.__convert_coeff, self.__command_list)
         elif process == Process.ATTACK:
-            AttackCommand(self.__map, self.__player, entity, target_coord, self.__convert_coeff, self.__command_list)
+            return AttackCommand(self.__map, self.__player, entity, target_coord, self.__convert_coeff, self.__command_list)
         elif process == Process.COLLECT:
-            CollectCommand(self.__map, self.__player, entity, target_coord, self.__convert_coeff, self.__command_list)
+            return CollectCommand(self.__map, self.__player, entity, target_coord, self.__convert_coeff, self.__command_list)
         elif process == Process.DROP:
-            DropCommand(self.__map, self.__player, entity, target_coord, self.__convert_coeff, self.__command_list)
+            return DropCommand(self.__map, self.__player, entity, target_coord, self.__convert_coeff, self.__command_list)
         elif process == Process.BUILD:
-            BuildCommand(self.__map, self.__player, entity, building, target_coord, self.__convert_coeff, self.__command_list)
+            return BuildCommand(self.__map, self.__player, entity, building, target_coord, self.__convert_coeff, self.__command_list)
     
+class Task:
+    def __init__(self,command_manager: CommandManager,  entity: Entity, target_coord: Coordinate) -> None:
+        """
+        Initializes the task with the given command_manager, entity and target_coord.
+        :param command_manager: The command manager of the player that will execute the task.
+        :type command_manager: CommandManager
+        :param entity: The entity that will execute the task.
+        :type entity: Entity
+        :param target_coord: The target coordinate where the entity will execute the task.
+        :type target_coord: Coordinate
+        """
+        self.__entity: Entity = entity
+        self.__target_coord: Coordinate = target_coord
+        self.__command_manager : CommandManager = command_manager
+        self.__waiting: bool = False
+    
+    @abstractmethod
+    def execute_task(self):
+        """
+        Execute the task, meaning that it will add a command(init the command) to the list or wait .
+        This method must be implemented by the subclasses.
+        """
+        pass
+    def get_command_manager(self) -> CommandManager:
+        """
+        Returns the command manager of the task.
+        :return: The command manager of the task.
+        :rtype: CommandManager
+        """
+        return self.__command_manager
+    
+    def get_entity(self) -> Entity:
+        """
+        Returns the entity that will execute the task.
+        :return: The entity that will execute the task.
+        :rtype: Entity
+        """
+        return self.__entity
+    
+    def get_target_coord(self) -> Coordinate:
+        """
+        Returns the target coordinate where the entity will execute the task.
+        :return: The target coordinate where the entity will execute the task.
+        :rtype: Coordinate
+        """
+        return self.__target_coord
+    
+    def get_waiting(self) -> bool:
+        """
+        Returns whether the task is waiting or not.
+        :return: True if the task is waiting, False otherwise.
+        :rtype: bool
+        """
+        return self.__waiting
+    
+    def set_waiting(self, waiting: bool) -> None:
+        """
+        Sets whether the task is waiting or not.
+        :param waiting: True if the task is waiting, False otherwise.
+        :type waiting: bool
+        """
+        self.__waiting = waiting
+    
+
+class MoveTask(Task):
+    def __init__(self, command_manager: CommandManager, unit: Unit, target_coord: Coordinate) -> None:
+        """
+        Initializes the MoveTask with the given command_manager, entity and target_coord.
+        :param command_manager: The command manager of the player that will execute the task.
+        :type command_manager: CommandManager
+        :param entity: The entity that will execute the task.
+        :type entity: Entity
+        :param target_coord: The target coordinate where the entity will move.
+        :type target_coord: Coordinate
+        """
+        super().__init__(command_manager, unit, target_coord)
+        self.__path: list[Coordinate] = self.get_command_manager().get_map().path_finding(self.get_entity().get_coordinate(), self.get_target_coord())
+        self.__step: int = 0
+        self.__command: Command = None
+    
+    def __init__(self,command_manager: CommandManager, unit: Unit, target_coord: Coordinate, avoid_from_coord: Coordinate, avoid_to_coord: Coordinate):
+        """
+        Initializes the MoveTask with the given command_manager, entity, target_coord, avoid_from_coord and avoid_to_coord.
+        :param command_manager: The command manager of the player that will execute the task.
+        :type command_manager: CommandManager
+        :param entity: The entity that will execute the task.
+        :type entity: Entity
+        :param target_coord: The target coordinate where the entity will move.
+        :type target_coord: Coordinate
+        :param avoid_from_coord: The coordinate from where the entity will avoid.
+        :type avoid_from_coord: Coordinate
+        :param avoid_to_coord: The coordinate to where the entity will avoid.
+        :type avoid_to_coord: Coordinate
+        """
+        super().__init__(command_manager, unit, target_coord)
+        self.__path: list[Coordinate] = self.get_command_manager().get_map().path_finding_avoid(self.get_entity().get_coordinate(), self.get_target_coord(), avoid_from_coord, avoid_to_coord)
+        self.__step: int = 0
+        self.__command: Command = None
+
+    
+    def execute_task(self):
+        """
+        Execute the move task.
+        """
+        if not (self.get_waiting() or self.get_entity().get_coordinate().is_adjacent(self.get_target_coord()) ) :
+            self.__command = self.get_command_manager().command(self.get_entity(), Process.MOVE, self.__path[self.__step])
+            self.set_waiting(True)
+        if self.__command.get_tick() == 0:
+            self.set_waiting(False)
+            self.__step += 1
+            
+
+class KillTask(Task):
+    def __init__(self, command_manager: CommandManager, entity: Entity, target_coord: Coordinate) -> None:
+        """
+        Initializes the KillTask with the given command_manager, entity and target_coord.
+        :param command_manager: The command manager of the player that will execute the task.
+        :type command_manager: CommandManager
+        :param entity: The entity that will execute the task.
+        :type entity: Entity
+        :param target_coord: The target coordinate where the entity will attack.
+        :type target_coord: Coordinate
+        """
+        super().__init__(command_manager, entity, target_coord)
+        self.__move_task: MoveTask = MoveTask(self.get_command_manager(), self.get_entity(), self.get_target_coord())
+        self.__command: Command = None
+        
+    
+    def execute_task(self):
+        """
+        Execute the kill task.
+        """
+        attacker: Unit = self.get_entity()
+        if not attacker.get_coordinate().is_in_range(self.get_target_coord(), attacker.get_range()): ## out of range case MOVE
+            if attacker.get_coordinate().is_adjacent() and not self.__move_task.get_waiting(): # diagonal out of range case
+                coord1 : Coordinate = Coordinate(attacker.get_coordinate().get_x(), self.get_target_coord().get_y())
+                coord2 : Coordinate = Coordinate(self.get_target_coord().get_x(), attacker.get_coordinate().get_y())
+                end_coord : Coordinate = (coord1 + Coordinate(0,1) ) if self.get_command_manager().get_map().check_placement(attacker, coord1) else (coord2 + Coordinate(1,0) )
+                self.get_command_manager().command(attacker, Process.MOVE, end_coord)
+            if not attacker.get_coordinate().is_adjacent():
+                self.__move_task.execute_task()
+        else: ## in range case ATTACK
+            if not self.get_waiting():
+                self.get_command_manager().command(self.get_entity(), Process.ATTACK, self.get_target_coord())
+                self.set_waiting(True)
+            if self.__command.get_tick() == 0:
+                self.set_waiting(False)
+            
+ ##reminder: if raise then pass by TaskManager       
+
+class CollectAndDropTask(Task):
+    def __init__(self, command_manager: CommandManager, villager: Villager, target_coord: Coordinate, drop_coord: Coordinate) -> None:
+        """
+        Initializes the CollectAndDropTask with the given command_manager, villager, target_coord and drop_coord.
+        :param command_manager: The command manager of the player that will execute the task.
+        :type command_manager: CommandManager
+        :param villager: The villager that will execute the task.
+        :type villager: Villager
+        :param target_coord: The target coordinate where the villager will collect.
+        :type target_coord: Coordinate
+        :param drop_coord: The drop coordinate where the villager will drop.
+        :type drop_coord: Coordinate
+        """
+        super().__init__(command_manager, villager, target_coord)
+        self.__drop_coord: Coordinate = drop_coord
+        self.__move_task_go: MoveTask = MoveTask(self.get_command_manager(), self.get_entity(), self.get_target_coord())
+        self.__move_task_back: MoveTask = MoveTask(self.get_command_manager(), self.get_entity(), self.__drop_coord)
+        self.__target_resource: Resource = self.get_command_manager().get_map().get(self.get_target_coord())
+        self.__command: Command = None
+    
+    def execute_task(self):
+        """
+        Execute the collect and drop task.
+        """
+        collecter : Villager = self.get_entity()
+        if collecter.get_inventory[self.__target_resource] < collecter.get_inventory_size(): ## COLLECT
+            if not self.get_entity().get_coordinate().is_adjacent(self.get_target_coord()): ## out of range case MOVE  
+                self.__move_task_go.execute_task()
+            else: ## in range case COLLECT
+                if not self.get_waiting():
+                    self.get_command_manager().command(self.get_entity(), Process.COLLECT, self.get_target_coord())
+                    self.set_waiting(True)
+                if self.__command.get_tick() == 0:
+                    self.set_waiting(False)
+        else: ##DROP
+            if not self.get_entity().get_coordinate().is_adjacent(self.__drop_coord): ## out of range case MOVE  
+                self.__move_task_back.execute_task()
+            else:
+                self.get_command_manager().command(self.get_entity(), Process.DROP, self.__drop_coord)
+                
+class BuildTask(Task):
+    def __init__(self, command_manager: CommandManager, villager: Villager, target_coord: Coordinate, building: Building) -> None:
+        """
+        Initializes the BuildTask with the given command_manager, villager, target_coord and building.
+        :param command_manager: The command manager of the player that will execute the task.
+        :type command_manager: CommandManager
+        :param villager: The villager that will execute the task.
+        :type villager: Villager
+        :param target_coord: The target coordinate where the villager will build.
+        :type target_coord: Coordinate
+        :param building: The building that will be built.
+        :type building: Building
+        """
+        super().__init__(command_manager, villager, target_coord)
+        self.__building: Building = building
+        self.__move_task: MoveTask = MoveTask(self.get_command_manager(), self.get_entity(), self.get_target_coord(), self.get_target_coord(), self.get_target_coord() + self.__building.get_size())
+        self.__command: Command = None
+    
+    def execute_task(self):
+        """
+        Execute the build task.
+        """
+        if not self.get_entity().get_coordinate().is_adjacent(self.get_target_coord()): ## out of range case MOVE  
+            self.__move_task.execute_task()
+        else:
+            if not self.get_waiting():
+                    self.__command =self.get_command_manager().command(self.get_entity(), Process.BUILD, self.get_target_coord(), self.__building) 
+                    self.set_waiting(True)
+            if self.__command.get_tick() == 0:
+                    self.set_waiting(False)
+                    self.get_entity().set_task(None)
+            
+
+class SpawnTask(Task):
+    def __init__(self, command_manager: CommandManager, building: Building) -> None:
+        """
+        Initializes the SpawnTask with the given command_manager and entity.
+        :param command_manager: The command manager of the player that will execute the task.
+        :type command_manager: CommandManager
+        :param building: The building that will execute the task.
+        :type building: Building
+        """
+        super().__init__(command_manager, building, target_coord)
+        target_coord : Coordinate = self.get_command_manager().get_map().find_nearest_empty_spot(building.get_coordinate())
+        
+    
+    def execute_task(self):
+        self.get_command_manager().command(self.get_entity(), Process.SPAWN, self.get_target_coord())
+
+class TaskManager:
+    def __init__(self, command_manager: CommandManager) -> None:
+        """
+        Initializes the TaskManager with the given command_manager.
+        :param command_manager: The command manager of the player that will execute the task.
+        :type command_manager: CommandManager
+        """
+        self.__command_manager: CommandManager = command_manager
+    
+    def execute_tasks(self) -> None:
+        """
+        Executes all assigned tasks in 
+        """
+        for unit in self.__command_manager.get_player().get_units():
+                if unit.get_task() is not None:
+                    try:
+                        unit.get_task().execute_task()
+                    except ValueError:
+                        unit.set_task(None)
+        for building in self.__command_manager.get_player().get_buildings():
+            if building.get_task() is not None:
+                try:
+                    building.get_task().execute_task()
+                except ValueError:
+                    building.set_task(None)
 
