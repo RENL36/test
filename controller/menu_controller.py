@@ -36,6 +36,7 @@ class MenuController:
         :type option: MenuOptions
         :rtype: None
         """
+        option = MenuOptions(option)
         if option == MenuOptions.EXIT:
             self.exit()
         elif option == MenuOptions.SETTINGS:

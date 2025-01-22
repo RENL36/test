@@ -22,6 +22,7 @@ class MenuView:
         :return: A list of menu options available for the given game state.
         :rtype: list[MenuOptions]
         """
+        game_state = GameState(game_state)
         if game_state == GameState.NOT_STARTED:
             return [MenuOptions.START_GAME, MenuOptions.LOAD_GAME, MenuOptions.SETTINGS, MenuOptions.EXIT]
         elif game_state == GameState.PAUSE:
