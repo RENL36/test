@@ -22,13 +22,12 @@ class MenuView:
         :return: A list of menu options available for the given game state.
         :rtype: list[MenuOptions]
         """
-        match game_state:
-            case GameState.NOT_STARTED:
-                return [ MenuOptions.START_GAME, MenuOptions.LOAD_GAME, MenuOptions.SETTINGS, MenuOptions.EXIT ]
-            case GameState.PAUSED:
-                return [ MenuOptions.RESUME, MenuOptions.SAVE_GAME, MenuOptions.SETTINGS, MenuOptions.VIEW_2_5D, MenuOptions.EXIT ]
-            case GameState.GAME_OVER:
-                return [ MenuOptions.RESTART, MenuOptions.LOAD_GAME, MenuOptions.SETTINGS, MenuOptions.VIEW_2_5D, MenuOptions.EXIT ]
+        if game_state == GameState.NOT_STARTED:
+            return [MenuOptions.START_GAME, MenuOptions.LOAD_GAME, MenuOptions.SETTINGS, MenuOptions.EXIT]
+        elif game_state == GameState.PAUSE:
+            return [MenuOptions.RESUME, MenuOptions.SAVE_GAME, MenuOptions.SETTINGS, MenuOptions.EXIT]
+        elif game_state == GameState.GAME_OVER:
+            return [MenuOptions.RESTART, MenuOptions.LOAD_GAME, MenuOptions.SETTINGS, MenuOptions.EXIT]
 
     def show(self, game_state: GameState) -> int:
         """

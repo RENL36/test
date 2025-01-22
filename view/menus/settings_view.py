@@ -25,23 +25,22 @@ class SettingsMenu:
         :param option: The option to be toggled.
         :type option: str
         """
-        match option:
-            case "Map Type":
-                current_index = list(MapType).index(self.settings.map_type)
-                new_index = (current_index + 1) % len(MapType)
-                self.settings.map_type = list(MapType)[new_index]
-            case "Map Size":
-                current_index = list(MapSize).index(self.settings.map_size)
-                new_index = (current_index + 1) % len(MapSize)
-                self.settings.map_size = list(MapSize)[new_index]
-            case "Starting Condition":
-                current_index = list(StartingCondition).index(self.settings.starting_condition)
-                new_index = (current_index + 1) % len(StartingCondition)
-                self.settings.starting_condition = list(StartingCondition)[new_index]
-            case "FPS":
-                current_index = list(FPS).index(self.settings.fps)
-                new_index = (current_index + 1) % len(FPS)
-                self.settings.fps = list(FPS)[new_index]
+        if option == "Map Type":
+            current_index = list(MapType).index(self.settings.map_type)
+            new_index = (current_index + 1) % len(MapType)
+            self.settings.map_type = list(MapType)[new_index]
+        elif option == "Map Size":
+            current_index = list(MapSize).index(self.settings.map_size)
+            new_index = (current_index + 1) % len(MapSize)
+            self.settings.map_size = list(MapSize)[new_index]
+        elif option == "Starting Condition":
+            current_index = list(StartingCondition).index(self.settings.starting_condition)
+            new_index = (current_index + 1) % len(StartingCondition)
+            self.settings.starting_condition = list(StartingCondition)[new_index]
+        elif option == "FPS":
+            current_index = list(FPS).index(self.settings.fps)
+            new_index = (current_index + 1) % len(FPS)
+            self.settings.fps = list(FPS)[new_index]
     
     def __show(self) -> None:
         """Display the settings menu and handle user input."""
