@@ -10,6 +10,7 @@ from controller.command import CommandManager, Command, TaskManager, BuildTask
 from controller.interactions import Interactions
 from controller.AI_controller import AIController, AI
 from model.player.player import Player
+from model.buildings.town_center import TownCenter
 from pygame import time
 import typing
 if typing.TYPE_CHECKING:
@@ -54,6 +55,45 @@ class GameController:
         :rtype: Map
         """
         map_generation: Map = Map(self.settings.map_size.value)
+
+        # Temporary: Create a Building called "Center" at the center of the map
+        # Note: It will be size 1, except if the map size is even (it will be size 2 in this case)
+        # from model.buildings.building import Building
+        # center_size = 2 if map_generation.get_size() % 2 == 0 else 1
+        # center_coordinate = Coordinate((map_generation.get_size() - center_size) // 2, (map_generation.get_size() - center_size) // 2)
+        # center = Building("Center", "C", 1, {}, center_size, 0)
+        # map_generation.add(center, center_coordinate)
+        # center.set_coordinate(center_coordinate)
+
+        # Generate the players:
+        # Place the town center of the first player at random position, far from the center (30% of map size).
+        # Place the 2nd player town center at the opposite side of the map.
+        self.__generate_players(2, map_generation)
+        interactions = Interactions(map_generation)
+        first_player_coordinate = None
+        min_distance = int(self.settings.map_size.value * 0.3)
+        for player in self.get_players():
+            town_center = TownCenter()
+            if player == self.get_players()[0]:
+                while True:
+                    coordinate = Coordinate(
+                        random.randint(min_distance, self.settings.map_size.value - min_distance - 1),
+                        random.randint(min_distance, self.settings.map_size.value - min_distance - 1)
+                    )
+                    if map_generation.check_placement(town_center, coordinate):
+                        break
+                first_player_coordinate = coordinate
+            else:
+                coordinate = Coordinate(
+                    self.settings.map_size.value - 1 - first_player_coordinate.get_x() - town_center.get_size() + 1,
+                    self.settings.map_size.value - 1 - first_player_coordinate.get_y() - town_center.get_size() + 1
+                )
+            
+            map_generation.add(town_center, coordinate)
+            town_center.set_coordinate(coordinate)
+            interactions.link_owner(player, town_center)
+            player.set_max_population(player.get_max_population() + town_center.get_capacity_increase())
+
         if MapType(self.settings.map_type) == MapType.RICH:
             # Wood need to occupe 5% of the map. It will be randomly placed
             wood = Wood()
@@ -106,7 +146,6 @@ class GameController:
         
         if MapType(self.settings.map_type) == MapType.TEST:
             # Generate a test map 10x10 with a town center at (0,0) and a villager at (5,5)
-            from model.buildings.town_center import TownCenter
             from model.units.villager import Villager
             map_generation = Map(120)
             interactions = Interactions(map_generation)
