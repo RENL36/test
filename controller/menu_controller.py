@@ -36,26 +36,25 @@ class MenuController:
         :type option: MenuOptions
         :rtype: None
         """
-        match MenuOptions(option):
-            case MenuOptions.EXIT:
-                self.exit()
-            case MenuOptions.SETTINGS:
-                SettingsMenu(self.settings)
-                self.call_menu()
-            case MenuOptions.START_GAME:
-                self.start_game()
-            case MenuOptions.LOAD_GAME:
-                # TODO: Implement game load
-                pass
-            case MenuOptions.RESUME:
-                # TODO: Implement game resume
-                pass
-            case MenuOptions.RESTART:
-                # TODO: Implement game restart
-                pass
-            case MenuOptions.SAVE_GAME:
-                # TODO: Implement game save
-                pass
+        if option == MenuOptions.EXIT:
+            self.exit()
+        elif option == MenuOptions.SETTINGS:
+            SettingsMenu(self.settings)
+            self.call_menu()
+        elif option == MenuOptions.START_GAME:
+            self.start_game()
+        elif option == MenuOptions.LOAD_GAME:
+            # TODO: Implement game load
+            pass
+        elif option == MenuOptions.RESUME:
+            # TODO: Implement game resume
+            pass
+        elif option == MenuOptions.RESTART:
+            # TODO: Implement game restart
+            pass
+        elif option == MenuOptions.SAVE_GAME:
+            # TODO: Implement game save
+            pass
     
     def exit(self) -> None:
         """
