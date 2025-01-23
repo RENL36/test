@@ -17,7 +17,7 @@ class TileManager:
             # "grass_tiles": pygame.transform.scale(pygame.image.load("assets/terrain/grass11.png"), (800, 600)),
             "wood": pygame.transform.scale(pygame.image.load("graphics/tree.png"), (64, 64)),
             "food": pygame.image.load("graphics/farm_2.png"),
-            "gold": pygame.transform.scale(pygame.image.load("graphics/gold_mine.png"), (64, 64)),
+            "gold": pygame.transform.scale(pygame.image.load("graphics/gold.png"), (64, 64)),
             "swordsman": pygame.transform.scale(pygame.image.load("graphics/pikeman.png"), (48, 48)),
             "horseman": pygame.transform.scale(pygame.image.load("graphics/cavalier.png"), (64, 64)),
             "archer": pygame.transform.scale(pygame.image.load("graphics/archer.png"), (64, 64)),
