@@ -20,7 +20,7 @@ class View2_5D:
         self.height = 900
         self.screen = pygame.display.set_mode((self.width, self.height))
         pygame.display.set_caption("2.5D View")
-
+       
         self.clock = pygame.time.Clock()
         self.running = True
         self.game_map = game_map
@@ -48,10 +48,10 @@ class View2_5D:
         """
         town_centre = False
 
-        # 🔹 Chargement de la texture du sol
+        # Chargement de la texture du sol
         grass_block = pygame.transform.scale(pygame.image.load("graphics/block_aoe.png"), (128, 128))
 
-        # 🔹 Dessiner toute la carte avec un décalage caméra
+        # Dessiner toute la carte avec un décalage caméra
         for x in range(self.map_size):
             for y in range(self.map_size):
                 iso_x = (x - self.camera_x) * self.tile_size - (y - self.camera_y) * self.tile_size + self.width // 2
@@ -59,7 +59,7 @@ class View2_5D:
 
                 self.screen.blit(grass_block, (iso_x, iso_y))
 
-        # 🔹 Dessiner les objets à leurs positions
+        #  Dessiner les objets à leurs positions
         for coordinate, obj in self.game_map.get_map().items():
             x, y = coordinate.get_x(), coordinate.get_y()
 
@@ -113,7 +113,53 @@ class View2_5D:
                     self.screen.blit(self.tile_manager.get_texture("gold"), (iso_x, iso_y))
                 
                 # self.renderer.render_tile(x, y, texture, self.camera)
+    def render_minimap(self):
+                """
+                Render a minimap in the bottom-right corner of the screen.
+                It shows the entire map with a rectangle indicating the visible area.
+                """
+                # Définition de la taille et de la position de la mini-map
+                minimap_width = 200
+                minimap_height = 200
+                minimap_x = self.width - minimap_width - 20  # Décalage de 20px du bord droit
+                minimap_y = self.height - minimap_height - 20  # Décalage de 20px du bas
 
+                # Dessiner le fond de la mini-map (bordure noire + fond vert)
+                pygame.draw.rect(self.screen, (0, 0, 0), (minimap_x - 2, minimap_y - 2, minimap_width + 4, minimap_height + 4))  # Bordure noire
+                pygame.draw.rect(self.screen, (34, 139, 34), (minimap_x, minimap_y, minimap_width, minimap_height))  # Fond vert
+
+                # Échelle de réduction pour que la carte entière tienne dans la mini-map
+                scale_x = minimap_width / self.map_size
+                scale_y = minimap_height / self.map_size
+
+                # Dessiner les objets sur la mini-map
+                for coordinate, obj in self.game_map.get_map().items():
+                        x, y = coordinate.get_x(), coordinate.get_y()
+                        pixel_x = int(minimap_x + x * scale_x)
+                        pixel_y = int(minimap_y + y * scale_y)
+
+                        # Couleurs différentes selon les objets
+                        color = (255, 255, 255)  # Par défaut blanc (terrain)
+                        if obj.get_letter() == "T":  # Town Center
+                                color = (255, 215, 0)  # Or
+                        elif obj.get_letter() == "W":  # Bois
+                                color = (139, 69, 19)  # Marron
+                        elif obj.get_letter() == "G":  # Or
+                                color = (255, 223, 0)  # Jaune
+                        elif obj.get_letter() == "F":  # Nourriture
+                                color = (255, 0, 0)  # Rouge
+                        elif obj.get_letter() == "v":  # Villageois
+                                color = (0, 0, 255)  # Bleu
+
+                        pygame.draw.rect(self.screen, color, (pixel_x, pixel_y, 3, 3))  # Carré de 3x3 pixels
+
+                # Dessiner un rectangle indiquant la zone actuellement visible sur la grande carte
+                viewport_x = int(minimap_x + self.camera_x * scale_x)
+                viewport_y = int(minimap_y + self.camera_y * scale_y)
+                viewport_width = int(self.viewport_width * scale_x)
+                viewport_height = int(self.viewport_height * scale_y)
+
+                pygame.draw.rect(self.screen, (255, 0, 0), (viewport_x, viewport_y, viewport_width, viewport_height), 2)  # Rouge pour la position caméra
     
     def run(self):
             """
@@ -124,7 +170,7 @@ class View2_5D:
                     if event.type == pygame.QUIT:
                         self.running = False
 
-                # 🔹 Gestion des déplacements de la caméra avec les flèches du clavier
+                #  Gestion des déplacements de la caméra avec les flèches du clavier
                 keys = pygame.key.get_pressed()
                 if keys[pygame.K_LEFT]:
                     self.camera_x = max(0, self.camera_x - self.camera_speed)
@@ -135,9 +181,10 @@ class View2_5D:
                 if keys[pygame.K_DOWN]:
                     self.camera_y = min(self.map_size - self.viewport_height, self.camera_y + self.camera_speed)
 
-                # 🔹 Effacer l'écran et afficher la carte mise à jour
+                #  Effacer l'écran et afficher la carte mise à jour
                 self.screen.fill((0, 0, 0))
                 self.render_map()
+                self.render_minimap()
                 pygame.display.flip()
                 self.clock.tick(60)
 
