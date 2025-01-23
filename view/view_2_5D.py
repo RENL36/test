@@ -29,106 +29,117 @@ class View2_5D:
         # self.renderer = Renderer(self.screen, tile_size=64)
         self.tile_manager = TileManager()
         
+        # Caméra : Permet de déplacer l'affichage sur la carte
+        self.camera_x = 0
+        self.camera_y = 0
+        self.camera_speed = 2  # Vitesse de déplacement de la caméra
+        self.viewport_width = 20  # Nombre de tuiles affichées horizontalement
+        self.viewport_height = 15  # Nombre de tuiles affichées verticalement
+
+        #  Taille de la carte (en tuiles)
+        self.map_size = self.game_map.get_size()
+        self.tile_size = 64  # Taille d'une tuile
+
+     
+        
     def render_map(self):
         """
-        Render the map with objects and textures.
+        Render only the visible part of the map using the camera.
         """
         town_centre = False
 
-        # displaying the ground blocks in an isometric way
+        # 🔹 Chargement de la texture du sol
         grass_block = pygame.transform.scale(pygame.image.load("graphics/block_aoe.png"), (128, 128))
-        for x in range(10):
-            for y in range(10):
-                self.screen.blit(grass_block, (700 + x*64 - y*64, 100 + x*32 + y*32))
 
-        # display the grass background
-        # self.screen.blit(self.tile_manager.get_texture("grass_tiles"), (0, 0))
-        # self.screen.blit(self.tile_manager.get_texture("grass_tiles"), (640, 0))
+        # 🔹 Dessiner toute la carte avec un décalage caméra
+        for x in range(self.map_size):
+            for y in range(self.map_size):
+                iso_x = (x - self.camera_x) * self.tile_size - (y - self.camera_y) * self.tile_size + self.width // 2
+                iso_y = (x - self.camera_x) * (self.tile_size // 2) + (y - self.camera_y) * (self.tile_size // 2) + self.height // 4
 
-        # iterating through all of the objects in order to display them
+                self.screen.blit(grass_block, (iso_x, iso_y))
+
+        # 🔹 Dessiner les objets à leurs positions
         for coordinate, obj in self.game_map.get_map().items():
-            # initialising the coordinates of the object on the map
             x, y = coordinate.get_x(), coordinate.get_y()
-            texture = None
 
-            if obj:
-                if obj.get_letter() == "T":
-                    # texture = self.tile_manager.get_texture("town_center")
-                    # self.renderer.render_tile(x+2, y, texture, self.camera)
-                    # self.renderer.render_tile(x, y+2, texture, self.camera)
-                    # self.renderer.render_tile(x+2, y+2, texture, self.camera)
+            iso_x = (x - self.camera_x) * self.tile_size - (y - self.camera_y) * self.tile_size + self.width // 2
+            iso_y = (x - self.camera_x) * (self.tile_size // 2) + (y - self.camera_y) * (self.tile_size // 2) + self.height // 4
 
-                    if not town_centre:
-                        self.screen.blit(pygame.transform.scale(pygame.image.load("graphics/town_center.png"), (256, 256)), (630 + x*64 - y*64, 50 + 32*x + 32*y))
-                        # self.screen.blit(pygame.transform.scale(pygame.image.load("graphics/town_center.png"), (32*4, 32*4)), (720 + 64*(x+2) - y*64, 70 + 32*(x+2) + 32*y))
-                        # self.screen.blit(pygame.transform.scale(pygame.image.load("graphics/town_center.png"), (32*4, 32*4)), (720 + 64*x - 64*(y+2), 70 + 32*x + 32*(y+2)))
-                        # self.screen.blit(pygame.transform.scale(pygame.image.load("graphics/town_center.png"), (32*4, 32*4)), (720 + 64*(x+2) - 64*(y+2),70 + 32*(x+2) +32*(y+2)))
-                        town_centre = True
+            if obj.get_letter() == "T" and not town_centre:
+                self.screen.blit(
+                    pygame.transform.scale(pygame.image.load("graphics/town_center.png"), (256, 256)),
+                    (iso_x, iso_y)
+                )
+                town_centre = True
 
-                elif obj.get_letter() == "v":
-                    self.screen.blit(self.tile_manager.get_texture('villager'), (740 + 64*x - 64*y, 90 + 32*x + 32*y))
+            elif obj.get_letter() == "v":
+                    self.screen.blit(self.tile_manager.get_texture('villager'), (iso_x, iso_y))
 
-                elif obj.get_letter() == "s":
-                    self.screen.blit(self.tile_manager.get_texture('swordsman'), (740 + 64*x - 64*y, 90 + 32*x + 32*y))
+            elif obj.get_letter() == "s":
+                    self.screen.blit(self.tile_manager.get_texture('swordsman'), (iso_x, iso_y))
 
-                elif obj.get_letter() == "h":
-                    self.screen.blit(self.tile_manager.get_texture('horseman'), (730 + 64*x - 64*y, 85 + 32*x + 32*y))
+            elif obj.get_letter() == "h":
+                    self.screen.blit(self.tile_manager.get_texture('horseman'), (iso_x, iso_y))
 
-                elif obj.get_letter() == "a":
-                    self.screen.blit(self.tile_manager.get_texture('archer'), (725 + 64*x - 64*y, 80 + 32*x + 32*y))
+            elif obj.get_letter() == "a":
+                    self.screen.blit(self.tile_manager.get_texture('archer'), (iso_x, iso_y))
 
-                elif obj.get_letter() == "H":
-                    self.screen.blit(self.tile_manager.get_texture("house"), (735 + 64*x - 64*y, 85 + 32*x + 32*y))
+            elif obj.get_letter() == "H":
+                    self.screen.blit(self.tile_manager.get_texture("house"), (iso_x, iso_y))
 
-                elif obj.get_letter() == "C":
-                    self.screen.blit(self.tile_manager.get_texture("camp"), (730 + 64*x - 64*y, 95 + 32*x + 32*y))
+            elif obj.get_letter() == "C":
+                    self.screen.blit(self.tile_manager.get_texture("camp"), (iso_x, iso_y))
 
-                elif obj.get_letter() == "B":
-                    self.screen.blit(self.tile_manager.get_texture("barracks"), (735 + 64*x - 64*y, 90 + 32*x + 32*y))
+            elif obj.get_letter() == "B":
+                    self.screen.blit(self.tile_manager.get_texture("barracks"), (iso_x, iso_y))
 
-                elif obj.get_letter() == "S":
-                    self.screen.blit(self.tile_manager.get_texture("stable"), (735 + 64*x - 64*y, 90 + 32*x + 32*y))
+            elif obj.get_letter() == "S":
+                    self.screen.blit(self.tile_manager.get_texture("stable"), (iso_x, iso_y))
 
-                elif obj.get_letter() == "A":
-                    self.screen.blit(self.tile_manager.get_texture("archery_range"), (735 + 64*x - 64*y, 90 + 32*x + 32*y))
+            elif obj.get_letter() == "A":
+                    self.screen.blit(self.tile_manager.get_texture("archery_range"), (iso_x, iso_y))
 
-                elif obj.get_letter() == "K":
-                    self.screen.blit(self.tile_manager.get_texture("keep"), (725 + 64*x - 64*y, 85 + 32*x + 32*y))
+            elif obj.get_letter() == "K":
+                    self.screen.blit(self.tile_manager.get_texture("keep"), (iso_x, iso_y))
 
-                elif obj.get_letter() == "W":
-                    self.screen.blit(self.tile_manager.get_texture("wood"), (740 + 64*x - 64*y, 85 + 32*x + 32*y))
+            elif obj.get_letter() == "W":
+                    self.screen.blit(self.tile_manager.get_texture("wood"), (iso_x, iso_y))
 
-                elif obj.get_letter() == "F":
-                    self.screen.blit(self.tile_manager.get_texture("food"), (710 + 64*x - 64*y, 102 + 32*x + 32*y))
+            elif obj.get_letter() == "F":
+                    self.screen.blit(self.tile_manager.get_texture("food"), (iso_x, iso_y))
 
-                elif obj.get_letter() == "G":
-                    self.screen.blit(self.tile_manager.get_texture("gold"), (730 + 64*x - 64*y, 95 + 32*x + 32*y))
-
-            
-            # self.renderer.render_tile(x, y, texture, self.camera)
+            elif obj.get_letter() == "G":
+                    self.screen.blit(self.tile_manager.get_texture("gold"), (iso_x, iso_y))
+                
+                # self.renderer.render_tile(x, y, texture, self.camera)
 
     
     def run(self):
-        """
-        Main loop for the 2.5D view.
-        """
-        while self.running:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    self.running = False
+            """
+            Main loop for the 2.5D view.
+            """
+            while self.running:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        self.running = False
 
-            # Clear the screen
-            self.screen.fill((0, 0, 0))
+                # 🔹 Gestion des déplacements de la caméra avec les flèches du clavier
+                keys = pygame.key.get_pressed()
+                if keys[pygame.K_LEFT]:
+                    self.camera_x = max(0, self.camera_x - self.camera_speed)
+                if keys[pygame.K_RIGHT]:
+                    self.camera_x = min(self.map_size - self.viewport_width, self.camera_x + self.camera_speed)
+                if keys[pygame.K_UP]:
+                    self.camera_y = max(0, self.camera_y - self.camera_speed)
+                if keys[pygame.K_DOWN]:
+                    self.camera_y = min(self.map_size - self.viewport_height, self.camera_y + self.camera_speed)
 
-            # self.renderer.render_tile(100, 100, self.tile_manager.get_texture("town_center"), self.camera)
+                # 🔹 Effacer l'écran et afficher la carte mise à jour
+                self.screen.fill((0, 0, 0))
+                self.render_map()
+                pygame.display.flip()
+                self.clock.tick(60)
+
+            pygame.quit()
             
-
-            # Render the map
-            self.render_map()
-
-            pygame.display.flip()
-            self.clock.tick(60)
-
-        pygame.quit()
-        
-    
