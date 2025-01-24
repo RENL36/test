@@ -1,6 +1,4 @@
 import pygame
-# from .camera import Camera
-# from .renderer import Renderer
 from .tile_manager import TileManager
 
 class View2_5D:
@@ -15,30 +13,25 @@ class View2_5D:
         :param game_map: Instance of the game map
         """
         pygame.init()
-
         self.width = 1600
         self.height = 900
         self.screen = pygame.display.set_mode((self.width, self.height))
         pygame.display.set_caption("2.5D View")
-       
         self.clock = pygame.time.Clock()
         self.running = True
         self.game_map = game_map
-
-        # self.camera = Camera(self.width, self.height)
-        # self.renderer = Renderer(self.screen, tile_size=64)
-        self.tile_manager = TileManager()
-        
-        # Caméra : Permet de déplacer l'affichage sur la carte
+        self.tile_manager = TileManager()    
         self.camera_x = 0
         self.camera_y = 0
         self.camera_speed = 2  # Vitesse de déplacement de la caméra
         self.viewport_width = 20  # Nombre de tuiles affichées horizontalement
         self.viewport_height = 15  # Nombre de tuiles affichées verticalement
-
+        
         #  Taille de la carte (en tuiles)
         self.map_size = self.game_map.get_size()
-        self.tile_size = 64  # Taille d'une tuile
+        self.tile_size = 40  # Taille d'une tuile
+        self.minimap_size = 150  # Taille de la mini-map
+        self.minimap_pos = (self.width - self.minimap_size - 10, self.height - self.minimap_size - 10) 
 
      
         
@@ -180,7 +173,10 @@ class View2_5D:
                     self.camera_y = max(0, self.camera_y - self.camera_speed)
                 if keys[pygame.K_DOWN]:
                     self.camera_y = min(self.map_size - self.viewport_height, self.camera_y + self.camera_speed)
-
+                if keys[pygame.K_F12]:
+                        self.running = False
+                        self.view_controller.switch_view()    
+                                            
                 #  Effacer l'écran et afficher la carte mise à jour
                 self.screen.fill((0, 0, 0))
                 self.render_map()
@@ -189,4 +185,3 @@ class View2_5D:
                 self.clock.tick(60)
 
             pygame.quit()
-            
