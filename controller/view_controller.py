@@ -1,3 +1,4 @@
+from controller.view_2_5D_controller import View2_5DController
 from util.map import Map
 from util.settings import Settings
 from view.base_view import BaseView
@@ -34,12 +35,16 @@ class ViewController:
         self.__game_controller.exit()
     
     def switch_view(self) -> None:
-        """Switch the view."""
+        """Bascule entre la vue terminale et la vue 2.5D en appuyant sur F12."""
         if isinstance(self.__current_view, TerminalView):
-            # TODO: Add the 2.5D view here once it's implemented.
-            raise NotImplementedError("There is currently only one view.")
+            print("⏩ Passage à la vue 2.5D...")
+            self.__view_2_5D_controller = View2_5DController(self.__settings)
+            self.__view_2_5D_controller.launch_view()
+            self.__current_view = self.__view_2_5D_controller  # Mise à jour de la vue actuelle
         else:
+            print("⏪ Retour à la vue terminale...")
             self.__current_view = TerminalView(self)
+            self.start_view()  # Afficher la vue terminale
     
     def display_stats(self) -> None:
         """
