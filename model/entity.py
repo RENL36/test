@@ -28,6 +28,9 @@ class Entity(GameObject):
         self.__spawning_time: int = spawning_time
         self.__player: 'Player' = None
         self.__task: 'Task' = None
+
+    def __repr__(self):
+        return f"{self.get_name()} Hp: {self.get_hp()}. Coordinate: {self.get_coordinate()}"
     
     def get_cost(self) -> dict['Resource', int]:
         """

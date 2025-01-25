@@ -11,12 +11,23 @@ from controller.interactions import Interactions
 from controller.AI_controller import AIController, AI
 from model.player.player import Player
 from model.buildings.town_center import TownCenter
+from model.resources.wood import Wood
+from model.resources.gold import Gold
 from pygame import time
+import threading
+from model.player.strategy import Strategy1
 import typing
 if typing.TYPE_CHECKING:
     from controller.menu_controller import MenuController
 class GameController:
     """This module is responsible for controlling the game."""
+    _instance = None
+
+    @staticmethod
+    def get_instance(menu_controller: 'MenuController'):
+        if GameController._instance is None:
+            GameController._instance = GameController(menu_controller)
+        return GameController._instance
 
     def __init__(self, menu_controller: 'MenuController') -> None:
         """
@@ -30,9 +41,20 @@ class GameController:
         self.__command_list: list[Command] = []
         self.__players: list[Player] = []
         self.__map: Map = self.__generate_map()
+        self.__ai_controller: AIController = AIController(self,1)
         self.__view_controller: ViewController = ViewController(self)
+        self.__assign_AI()
         # self.__ai_controller: AIController = AIController(self)
         self.__running: bool = False
+        game_thread = threading.Thread(target=self.game_loop)
+        ai_thread = threading.Thread(target=self.__ai_controller.ai_loop)
+        game_thread.start()
+        ai_thread.start()
+
+    def get_commandlist(self):
+        return self.__command_list
+
+        
         # self.__ai_controller.__ai_loop()
         self.game_loop()
         
@@ -46,6 +68,14 @@ class GameController:
             self.get_players().append(player)
             player.set_command_manager(CommandManager(map, player, self.settings.fps.value, self.__command_list))
             player.set_task_manager(TaskManager(player.get_command_manager()))
+
+    def __assign_AI(self)-> None:
+        for player in self.get_players():
+            player.set_ai(AI(player,None, map))
+            player.get_ai().set_strategy(Strategy1(player.get_ai(), 5))
+            print(f"Player {player.get_name()} has strat {player.get_ai().get_strategy()}")
+            player.update_centre_coordinate()  
+            
 
     def __generate_map(self) -> Map:
         """
@@ -199,6 +229,7 @@ class GameController:
     def exit(self) -> None:
         """Exits the game."""
         self.__running = False
+        self.__ai_controller.exit()
         self.__menu_controller.exit()
 
     # TODO: Generate list of players and their units/buildings.
@@ -207,7 +238,16 @@ class GameController:
         Update the game state.
         """
         for command in self.__command_list.copy():
-            command.run_command()
+            try:
+                #print(f"Command {command} is being executed")
+                command.run_command()
+            except ValueError as e:
+               #print(e)
+                #print("Command failed.")
+                command.remove_command_from_list(self.__command_list)
+                command.get_entity().set_task(None)
+                #exit()
+
     
     def load_task(self) -> None:
         """
@@ -215,6 +255,9 @@ class GameController:
         serves as the player's input
         """
         for player in self.__players:
+            for unit in player.get_units():
+               #print(f"Unit {unit.get_name()} has {unit.get_task()} at {unit.get_coordinate()}")
+               pass
             player.get_task_manager().execute_tasks()
 
     def game_loop(self) -> None:

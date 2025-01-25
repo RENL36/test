@@ -12,6 +12,14 @@ from model.entity import Entity
 class Interactions:
     def __init__(self, map: Map) -> None:
         self.__map: Map = map
+        
+    def get_map(self) -> Map:
+        """
+        Returns the map.
+        :return: The map.
+        :rtype: Map
+        """
+        return self.__map
     
     def place_object(self, object: GameObject, coordinate: Coordinate) -> None:
         """
