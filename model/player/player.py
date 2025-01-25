@@ -4,6 +4,7 @@ from model.resources.wood import Wood
 from model.resources.resource import Resource
 from model.units.unit import Unit
 from model.buildings.building import Building
+from util.coordinate import Coordinate
 from typing import Set, TYPE_CHECKING
 if TYPE_CHECKING:
     from controller.command import CommandManager, TaskManager
@@ -31,7 +32,20 @@ class Player:
         self.__command_manager: 'CommandManager' = None
         self.__task_manager: 'TaskManager' = None
         self.__ai: 'AI' = None
-    
+        self.__centre_coordinate: Coordinate = None
+
+    def __repr__(self):
+        return f"{self.get_name()} : {self.get_color()}"
+    def get_centre_coordinate(self) -> Coordinate:
+        return self.__centre_coordinate
+    def update_centre_coordinate(self) -> None:
+        if self.__buildings:
+            total_x = sum(building.get_coordinate().get_x() for building in self.__buildings)
+            total_y = sum(building.get_coordinate().get_y() for building in self.__buildings)
+            self.__centre_coordinate = Coordinate(total_x, total_y) // len(self.__buildings)
+        else:
+            self.__centre_coordinate = None
+
     def get_ai(self) -> 'AI':
         """
         Returns the AI of the player.
@@ -60,6 +74,7 @@ class Player:
         player.__unit_count = self.__unit_count
         player.__buildings = self.__buildings.copy()
         player.__max_population = self.__max_population
+        player.__centre_coordinate = self.__centre_coordinate
         return player
     
     def get_name(self) -> str:
