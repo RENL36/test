@@ -19,6 +19,7 @@ class GameController:
     """This module is responsible for controlling the game."""
     _instance = None
 
+
     @staticmethod
     def get_instance(menu_controller: 'MenuController'):
         if GameController._instance is None:
