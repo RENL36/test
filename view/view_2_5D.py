@@ -176,6 +176,8 @@ class View2_5D:
                 if keys[pygame.K_F12]:
                         self.running = False
                         self.view_controller.switch_view()    
+                if keys[pygame.K_ESCAPE]:
+                        pygame.quit()
                                             
                 #  Effacer l'écran et afficher la carte mise à jour
                 self.screen.fill((0, 0, 0))
