@@ -8,8 +8,8 @@ class Villager(Unit):
 
     def __init__(self):
         """Initializes the villager"""
-        super().__init__("Villager", "v", 25, {Food: 50}, 25, 2, 0.8)        
-        self.__inventory: dict[Resource, int] = {Food: 0,Gold: 0,Wood: 0}
+        super().__init__("Villager", "v", 25, {Food(): 50}, 25, 2, 0.8)        
+        self.__inventory: dict[Resource, int] = {Food(): 0,Gold(): 0,Wood(): 0}
         self.__inventory_size: int = 20
         self.__collect_time_per_minute: int = 25
 
