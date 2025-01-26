@@ -6,7 +6,7 @@ from model.resources.wood import Wood
 class Horseman(Unit):
     """This class represents the Horseman the map, inheriting from Unit"""
     def __init__(self):
-        super().__init__("Horseman", "h", 45, 4, 1.2, { Food : 50, Gold: 20}, 30)
+        super().__init__("Horseman", "h", 45, { Food : 50, Gold: 20},30, 4,  1.2)
 
     
         
