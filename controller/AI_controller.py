@@ -105,6 +105,13 @@ class AIController:
         for player in self.__players:
             player.set_ai(AI(player, None, self.__game_controller.get_map().capture()))
 
+    def exit(self) -> None:
+        """
+        Exits the AIController.
+        """
+        self.__running = False
+        exit(0)
+
     def update_knowledge(self) -> None:
         """
         Updates the known map of the player.
@@ -113,17 +120,22 @@ class AIController:
         :type player: Player
         """
         for player in self.__players:
+            player.update_centre_coordinate()
+        for player in self.__players:
             player.get_ai().set_map_known(self.__game_controller.get_map().capture())
             player.get_ai().update_enemies([enemy.capture() for enemy in self.__players if enemy != player])
 
 
-    def __ai_loop(self) -> None:
+       
+    def ai_loop(self) -> None:
         """
         The main loop of the AIController.
         """
         while self.__running:
+            ##print("AI loop")
             for player in self.__players:
-                self.update_knowledge(player)
+                self.update_knowledge()
+            for player in self.__players:    
                 player.get_ai().get_strategy().execute()
             time.wait(1000*self.__refresh_rate)
 
