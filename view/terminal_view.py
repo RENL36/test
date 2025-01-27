@@ -125,7 +125,6 @@ class TerminalView(BaseView):
         line[-1] = f"{line[-1][:len(line[-1]) - len(bottom_right)]}{bottom_right}"
         return line
 
-
     def __display_loop(self) -> None:
         """
         Display the map in the terminal and update it each tick (depending on the FPS).
