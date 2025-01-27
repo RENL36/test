@@ -41,7 +41,6 @@ class ViewController:
         else:
             self.__current_view = TerminalView(self)
 
-
     def generate_player_stats(self, player) -> dict:
         """
         Generate a dictionary containing stats for a single player.
@@ -89,8 +88,6 @@ class ViewController:
         """
         Pause the game, and create an HTML webpage that shows stats for all players.
         """
-        # commented pause for now since it breaks
-        # self.pause()
         players = self.__game_controller.get_players()
         all_players_stats = [self.generate_player_stats(player) for player in players]
 
@@ -102,9 +99,29 @@ class ViewController:
             <title>Game Stats</title>
             <style>
                 body {{ font-family: Arial, sans-serif; margin: 20px; }}
-                pre {{ background: #f4f4f4; padding: 10px; border-radius: 5px; }}
-                .collapsible {{ cursor: pointer; padding: 10px; background: #007bff; color: white; border: none; border-radius: 5px; text-align: left; }}
-                .content {{ padding: 10px; display: none; background-color: #f9f9f9; border: 1px solid #ccc; border-radius: 5px; }}
+                .collapsible {{
+                    cursor: pointer;
+                    padding: 10px;
+                    background: #007bff;
+                    color: white;
+                    border: none;
+                    border-radius: 5px;
+                    text-align: left;
+                    margin-bottom: 5px;
+                }}
+                .content {{
+                    padding: 10px;
+                    display: none;
+                    background-color: #f9f9f9;
+                    border: 1px solid #ccc;
+                    border-radius: 5px;
+                    margin-bottom: 10px;
+                }}
+                pre {{
+                    background: #f4f4f4;
+                    padding: 10px;
+                    border-radius: 5px;
+                }}
             </style>
             <script>
                 function toggleContent(id) {{
@@ -139,10 +156,33 @@ class ViewController:
         html = ""
         for i, player_stats in enumerate(players_stats):
             player_name = player_stats["name"]
+            units_html = "".join(
+                f"""
+                <button class="collapsible" onclick="toggleContent('unit_{i}_{j}')">Unit: {unit['name']}</button>
+                <div id="unit_{i}_{j}" class="content">
+                    <pre>{json.dumps(unit, indent=4)}</pre>
+                </div>
+                """
+                for j, unit in enumerate(player_stats["units"])
+            )
+            buildings_html = "".join(
+                f"""
+                <button class="collapsible" onclick="toggleContent('building_{i}_{j}')">Building: {building['name']}</button>
+                <div id="building_{i}_{j}" class="content">
+                    <pre>{json.dumps(building, indent=4)}</pre>
+                </div>
+                """
+                for j, building in enumerate(player_stats["buildings"])
+            )
             html += f"""
             <button class="collapsible" onclick="toggleContent('player_{i}')">Player: {player_name}</button>
             <div id="player_{i}" class="content">
-                <pre>{json.dumps(player_stats, indent=4)}</pre>
+                <h3>Resources</h3>
+                <pre>{json.dumps(player_stats["resources"], indent=4)}</pre>
+                <h3>Units</h3>
+                {units_html}
+                <h3>Buildings</h3>
+                {buildings_html}
             </div>
             """
         return html
