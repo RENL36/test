@@ -245,6 +245,7 @@ class GameController:
     def pause(self) -> None:
         """Pauses the game."""
         self.__running = False
+        self.__ai_controller.pause()
     
     def exit(self) -> None:
         """Exits the game."""
@@ -290,3 +291,14 @@ class GameController:
                 self.update() 
                 # Cap the loop time to ensure it doesn't run faster than the desired FPS
                 time.Clock().tick(self.settings.fps.value)
+    
+    def resume(self) -> None:
+        """
+        Resumes the game.
+        """
+        self.start()
+        game_thread = threading.Thread(target=self.game_loop)
+        ai_thread = threading.Thread(target=self.__ai_controller.ai_loop)
+        game_thread.start()
+        ai_thread.start()
+            
