@@ -1,7 +1,7 @@
 from model.game_object import GameObject
+from model.resources.resource import Resource
 import typing
 if typing.TYPE_CHECKING:
-    from model.resources.resource import Resource
     from model.player.player import Player
     from controller.command import Task
 
@@ -24,7 +24,7 @@ class Entity(GameObject):
         :type spawning_time: int
         """
         super().__init__(name, letter, hp)
-        self.__cost: dict['Resource', int] = cost
+        self.__cost: dict[Resource, int] = cost
         self.__spawning_time: int = spawning_time
         self.__player: 'Player' = None
         self.__task: 'Task' = None
@@ -32,7 +32,10 @@ class Entity(GameObject):
     def __repr__(self):
         return f"{self.get_name()} Hp: {self.get_hp()}. Coordinate: {self.get_coordinate()}"
     
-    def get_cost(self) -> dict['Resource', int]:
+    def __repr__(self):
+        return f"{self.get_name()} Hp: {self.get_hp()}. Coordinate: {self.get_coordinate()}"
+    
+    def get_cost(self) -> dict[Resource, int]:
         """
         Returns the cost of the entity.
 

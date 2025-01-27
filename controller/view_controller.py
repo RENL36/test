@@ -66,6 +66,7 @@ class ViewController:
             <h2>Settings</h2>
             <p>Map Size: {self.get_settings().map_size.value}</p>
             <p>Map Type: {self.get_settings().map_type}</p>
+            <p> Task: {[unit.get_task() for unit in self.__game_controller.get_players()[0].get_units()]}</p>
         </body>
         </html>
         """

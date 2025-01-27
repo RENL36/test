@@ -1,14 +1,14 @@
 import typing
 if typing.TYPE_CHECKING:
     from controller.game_controller import GameController
-from model.player.strategy import Strategy
+from model.player.strategy import Strategy, Strategy1
 from model.player.player import Player
 from util.map import Map
 from pygame import time
 
 class AI:
     """This module is responsible for controlling the AI."""
-    def __init__(self, player: Player, strategy: 'Strategy', map: Map) -> None:
+    def __init__(self, player: Player, strategy: Strategy, map: Map) -> None:
         """
         Initializes the AI with the given player.
 
@@ -16,7 +16,7 @@ class AI:
         :type player: Player
         """
         self.__player: Player = player
-        self.__strategy: 'Strategy' = Strategy(self)
+        self.__strategy: Strategy = strategy
         self.__map_known: Map = map
         self.__enemies: list[Player] = []
 
@@ -135,8 +135,11 @@ class AIController:
             ##print("AI loop")
             for player in self.__players:
                 self.update_knowledge()
-            for player in self.__players:    
-                player.get_ai().get_strategy().execute()
+            for player in self.__players:
+                try:    
+                    player.get_ai().get_strategy().execute()
+                except (ValueError, IndexError,AttributeError):
+                    pass
             time.wait(1000*self.__refresh_rate)
 
     

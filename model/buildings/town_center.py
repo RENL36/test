@@ -6,7 +6,7 @@ class TownCenter(Building):
     
     def __init__(self) -> None:
         """Initialize a TownCenter object."""
-        super().__init__("Town Center", "T", 1000, {Wood(): 100}, 4, 150)
+        super().__init__("Town Center", "T", 1000, {Wood(): 350}, 4, 150)
         self.__capacity_increase = 5
         super().set_population_increase(True)
         super().set_resources_drop_point(True)
