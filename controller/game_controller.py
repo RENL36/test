@@ -120,11 +120,17 @@ class GameController:
             town_center = TownCenter()
             if player == self.get_players()[0]:
                 while True:
-                    coordinate = Coordinate(
-                        random.randint(min_distance, self.settings.map_size.value - min_distance - 1),
-                        random.randint(min_distance, self.settings.map_size.value - min_distance - 1)
+                    # Get a random coordinate. If it is at less than min_distance from the center, try again.
+                    center_size = 2 if map_generation.get_size() % 2 == 0 else 1
+                    center_coordinate = Coordinate((map_generation.get_size() - center_size) // 2, (map_generation.get_size() - center_size) // 2)
+                    coordinate = Coordinate((map_generation.get_size() - center_size) // 2, (map_generation.get_size() - center_size) // 2)
+                    while coordinate.distance(center_coordinate) < min_distance:
+                        coordinate = Coordinate(random.randint(0, self.settings.map_size.value - 1), random.randint(0, self.settings.map_size.value - 1))
+                    coordinate_mirror = Coordinate(
+                        self.settings.map_size.value - 1 - coordinate.get_x() - town_center.get_size() + 1,
+                        self.settings.map_size.value - 1 - coordinate.get_y() - town_center.get_size() + 1
                     )
-                    if map_generation.check_placement(town_center, coordinate):
+                    if map_generation.check_placement(town_center, coordinate) and map_generation.check_placement(town_center, coordinate_mirror):
                         break
                 first_player_coordinate = coordinate
             else:
