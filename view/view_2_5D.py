@@ -155,35 +155,37 @@ class View2_5D:
                 pygame.draw.rect(self.screen, (255, 0, 0), (viewport_x, viewport_y, viewport_width, viewport_height), 2)  # Rouge pour la position caméra
     
     def run(self):
-            """
-            Main loop for the 2.5D view.
-            """
-            while self.running:
-                for event in pygame.event.get():
-                    if event.type == pygame.QUIT:
-                        self.running = False
-
-                #  Gestion des déplacements de la caméra avec les flèches du clavier
-                keys = pygame.key.get_pressed()
-                if keys[pygame.K_LEFT]:
-                    self.camera_x = max(0, self.camera_x - self.camera_speed)
-                if keys[pygame.K_RIGHT]:
-                    self.camera_x = min(self.map_size - self.viewport_width, self.camera_x + self.camera_speed)
-                if keys[pygame.K_UP]:
-                    self.camera_y = max(0, self.camera_y - self.camera_speed)
-                if keys[pygame.K_DOWN]:
-                    self.camera_y = min(self.map_size - self.viewport_height, self.camera_y + self.camera_speed)
-                if keys[pygame.K_F12]:
-                        self.running = False
-                        self.view_controller.switch_view()    
-                if keys[pygame.K_ESCAPE]:
+        """
+        Main loop for the 2.5D view.
+        """
+        while self.running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.running = False
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        self.running = False  # Quitter proprement
                         pygame.quit()
-                                            
-                #  Effacer l'écran et afficher la carte mise à jour
-                self.screen.fill((0, 0, 0))
-                self.render_map()
-                self.render_minimap()
-                pygame.display.flip()
-                self.clock.tick(60)
+                    elif event.key == pygame.K_F12:
+                        self.running = False
+                        self.view_controller.switch_view()
 
-            pygame.quit()
+            #  Gestion des déplacements de la caméra avec les flèches et touches ZQSD/WASD
+            keys = pygame.key.get_pressed()
+            if keys[pygame.K_LEFT] or keys[pygame.K_q] or keys[pygame.K_a]:  # Q, A, ou ←
+                self.camera_x = max(0, self.camera_x - self.camera_speed)
+            if keys[pygame.K_RIGHT] or keys[pygame.K_d]:  # D ou →
+                self.camera_x = min(self.map_size - self.viewport_width, self.camera_x + self.camera_speed)
+            if keys[pygame.K_UP] or keys[pygame.K_z] or keys[pygame.K_w]:  # Z, W, ou ↑
+                self.camera_y = max(0, self.camera_y - self.camera_speed)
+            if keys[pygame.K_DOWN] or keys[pygame.K_s]:  # S ou ↓
+                self.camera_y = min(self.map_size - self.viewport_height, self.camera_y + self.camera_speed)
+
+            #  Effacer l'écran et afficher la carte mise à jour
+            self.screen.fill((0, 0, 0))
+            self.render_map()
+            self.render_minimap()
+            pygame.display.flip()
+            self.clock.tick(60)
+
+        pygame.quit()
