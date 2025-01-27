@@ -375,28 +375,28 @@ class Map():
         map = self.capture()
         zone_list = []
         radius = 1
-        size += 5
+        size += 1
         size_checker = GameObject("", "",1)
         size_checker.set_size(size)
         while radius < map.get_size():
             for x in range(coordinate.get_x() - radius, coordinate.get_x() + radius + 1):
                 if map.check_placement(size_checker, Coordinate(x, coordinate.get_y() - radius)):
                     current = Coordinate(x,coordinate.get_y() - radius)
-                    zone_list.append(current+5)
+                    zone_list.append(current+1)
                     map.add(size_checker, current)
                 if map.check_placement(size_checker, Coordinate(x, coordinate.get_y() + radius)):
                     current = Coordinate(x, coordinate.get_y() + radius)
-                    zone_list.append(current+5)
+                    zone_list.append(current+1)
                     map.add(size_checker,current)
             
             for y in range(coordinate.get_y() - radius, coordinate.get_y() + radius + 1):
                 if map.check_placement(size_checker, Coordinate(coordinate.get_x() - radius, y)):
                     current = Coordinate(coordinate.get_x() - radius, y)
-                    zone_list.append(current + 5)
+                    zone_list.append(current+1)
                     map.add(size_checker,current)
                 if map.check_placement(size_checker, Coordinate(coordinate.get_x() + radius, y)):
                     current = Coordinate(coordinate.get_x() + radius, y)
-                    zone_list.append(current+5)
+                    zone_list.append(current+1)
                     map.add(size_checker, current)
             radius += 1
             if size ==6 and len(zone_list) > 0:
