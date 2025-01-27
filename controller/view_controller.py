@@ -86,7 +86,8 @@ class ViewController:
 
     def display_stats(self) -> None:
         """
-        Pause the game, and create an HTML webpage that shows stats for all players.
+        Pause the game, and create an HTML webpage that shows stats for all players,
+        game settings, and the map.
         """
         players = self.__game_controller.get_players()
         all_players_stats = [self.generate_player_stats(player) for player in players]
@@ -132,7 +133,15 @@ class ViewController:
         </head>
         <body>
             <h1>Game Stats</h1>
-            <h2>All Players</h2>
+            
+            <h2>Map</h2>
+            <p>Size: {self.get_map().get_size()}</p>
+
+            <h2>Settings</h2>
+            <p>Map Size: {self.get_settings().map_size.value}</p>
+            <p>Map Type: {self.get_settings().map_type}</p>
+
+            <h2>Players</h2>
             {self.generate_collapsible_html(all_players_stats)}
         </body>
         </html>
