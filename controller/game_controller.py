@@ -1,12 +1,13 @@
 import random
 from controller.view_controller import ViewController
+from model.buildings.town_center import TownCenter
+from model.resources.food import Food
 from model.resources.wood import Wood
 from model.resources.gold import Gold
 from util.map import Map
 from util.coordinate import Coordinate
 from util.settings import Settings
-from util.state_manager import MapType
-import typing
+from util.state_manager import MapType, StartingCondition
 from controller.command import CommandManager, Command, TaskManager, BuildTask, MoveTask, CollectAndDropTask, SpawnCommand
 from controller.interactions import Interactions
 from controller.AI_controller import AIController, AI
@@ -20,6 +21,7 @@ from model.player.strategy import Strategy1
 import typing
 if typing.TYPE_CHECKING:
     from controller.menu_controller import MenuController
+    
 class GameController:
     """This module is responsible for controlling the game."""
     _instance = None
@@ -69,6 +71,20 @@ class GameController:
             self.get_players().append(player)
             player.set_command_manager(CommandManager(map, player, self.settings.fps.value, self.__command_list))
             player.set_task_manager(TaskManager(player.get_command_manager()))
+
+            option = StartingCondition(self.settings.starting_condition)
+            if option == StartingCondition.LEAN:
+                player.collect( Food(), 50 )
+                player.collect( Wood(), 200 )
+                player.collect( Gold(), 50 )
+            elif option == StartingCondition.MEAN:
+                player.collect( Food(), 2000 )
+                player.collect( Wood(), 2000 )
+                player.collect( Gold(), 2000 )
+            elif option == StartingCondition.MARINES:
+                player.collect( Food(), 20000 )
+                player.collect( Wood(), 20000 )
+                player.collect( Gold(), 20000 )
     
     def __assign_AI(self)-> None:
         for player in self.get_players():
@@ -105,6 +121,8 @@ class GameController:
         min_distance = int(self.settings.map_size.value * 0.3)
         for player in self.get_players():
             town_center = TownCenter()
+            interactions.link_owner(player, town_center)
+            player.set_max_population(player.get_max_population() + town_center.get_capacity_increase())
             if player == self.get_players()[0]:
                 while True:
                     coordinate = Coordinate(
@@ -211,6 +229,7 @@ class GameController:
         :rtype: Map
         """
         return self.__map
+    
     def get_players(self) -> list[Player]:
         """
         Returns the players.
