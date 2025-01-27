@@ -58,9 +58,6 @@ class GameController:
         return self.__command_list
 
         
-        # self.__ai_controller.__ai_loop()
-        self.game_loop()
-        
     def __generate_players(self, number_of_player: int, map: Map ) -> None:
         """
         Generates the players based on the settings.
@@ -121,8 +118,6 @@ class GameController:
         min_distance = int(self.settings.map_size.value * 0.3)
         for player in self.get_players():
             town_center = TownCenter()
-            interactions.link_owner(player, town_center)
-            player.set_max_population(player.get_max_population() + town_center.get_capacity_increase())
             if player == self.get_players()[0]:
                 while True:
                     coordinate = Coordinate(
@@ -138,8 +133,7 @@ class GameController:
                     self.settings.map_size.value - 1 - first_player_coordinate.get_y() - town_center.get_size() + 1
                 )
             
-            map_generation.add(town_center, coordinate)
-            town_center.set_coordinate(coordinate)
+            interactions.place_object(town_center,coordinate)
             interactions.link_owner(player, town_center)
             player.set_max_population(player.get_max_population() + town_center.get_capacity_increase())
 

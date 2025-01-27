@@ -133,13 +133,13 @@ class AIController:
         """
         while self.__running:
             ##print("AI loop")
-            for player in self.__players:
-                self.update_knowledge()
-            for player in self.__players:
-                try:    
-                    player.get_ai().get_strategy().execute()
-                except (ValueError, IndexError,AttributeError):
-                    pass
+            try:  
+                for player in self.__players:
+                    self.update_knowledge()
+                for player in self.__players:  
+                        player.get_ai().get_strategy().execute()
+            except (ValueError, IndexError,AttributeError):
+                pass
             time.wait(1000*self.__refresh_rate)
 
     
