@@ -193,8 +193,9 @@ class TerminalView(BaseView):
                 self.__pause()
                 self._BaseView__controller.pause()
             elif key.code == self.__terminal.KEY_TAB:
-                self.__pause()
-                self._BaseView__controller.pause()
+                # commented pause for now since it breaks
+                # self.__pause()
+                # self._BaseView__controller.pause()
                 self._BaseView__controller.display_stats()
             elif key.code == self.__terminal.KEY_ESCAPE:
                 self.exit()
