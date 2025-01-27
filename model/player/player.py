@@ -1,6 +1,7 @@
 from model.resources.food import Food
 from model.resources.gold import Gold
 from model.resources.wood import Wood
+from util.coordinate import Coordinate
 from model.resources.resource import Resource
 from model.units.unit import Unit
 from model.buildings.building import Building
@@ -45,7 +46,6 @@ class Player:
             self.__centre_coordinate = Coordinate(total_x, total_y) // len(self.__buildings)
         else:
             self.__centre_coordinate = None
-
     def get_ai(self) -> 'AI':
         """
         Returns the AI of the player.
@@ -274,4 +274,6 @@ class Player:
         :return: True if the players are equal, False otherwise.
         :rtype: bool
         """
+        if not isinstance(other, Player) or other is None:
+            return False
         return self.__name == other.get_name() and self.__color == other.get_color()

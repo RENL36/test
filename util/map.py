@@ -1,6 +1,12 @@
 from collections import defaultdict
 from model.game_object import GameObject
 from util.coordinate import Coordinate
+from model.entity import Entity
+from model.resources.resource import Resource
+from model.buildings.farm import Farm
+from pathfinding.core.diagonal_movement import DiagonalMovement
+from pathfinding.core.grid import Grid
+from pathfinding.finder.a_star import AStarFinder
 import typing
 if typing.TYPE_CHECKING:
     from model.player.player import Player
@@ -10,6 +16,7 @@ This file contains the Map class which is used to represent the map of the game 
 It serves as the heart of the model-the representation of datas
 """
 class Map():
+    DIRECTIONS = [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1)]
     """
     The Map class is used to represent the map of the game. It contains the matrix of the map and the methods associated with it.
     """
@@ -63,7 +70,7 @@ class Map():
         :raises ValueError: If the object cannot be placed at the given coordinate.
         """
         if not self.check_placement(object, coordinate):
-            raise ValueError("Cannot place object at the given coordinate.")
+            raise ValueError(f"Cannot place object at the given coordinate {coordinate}.")
         for x in range(object.get_size()):
             for y in range(object.get_size()):
                 self.__matrix[Coordinate(coordinate.get_x() + x, coordinate.get_y() + y)] = object
@@ -90,10 +97,10 @@ class Map():
         :raises ValueError: If the coordinate is out of bounds or there is no entity at the given coordinate.
         """
         if not (Coordinate(0, 0) <= coordinate <= Coordinate(self.get_size(), self.get_size())):
-            raise ValueError("Coordinate is out of bounds.")
+            raise ValueError(f"Coordinate is out of bounds.{coordinate}")
         object: GameObject = self.__matrix[coordinate]
         if object is None:
-            raise ValueError("No entity at the given coordinate.")
+            raise ValueError(f"No entity at the given coordinate.{coordinate}")
         for x in range(object.get_size()):
             for y in range(object.get_size()):
                 self.__matrix[Coordinate(coordinate.get_x() + x, coordinate.get_y() + y)] = None
@@ -123,7 +130,7 @@ class Map():
         :raises ValueError: If the new coordinate is not adjacent or not available.
         """
         if not object.get_coordinate().is_adjacent(new_coordinate):
-            raise ValueError("New coordinate is not adjacent to the entity's current coordinate.")
+            raise ValueError(f"New coordinate {new_coordinate} is not adjacent to the entity's current coordinate { object.get_coordinate()}.")
         if not self.check_placement(object, new_coordinate):
             raise ValueError("New coordinate is not available.")
         self.remove(object.get_coordinate())
@@ -293,6 +300,14 @@ class Map():
         :return: A list of coordinates representing the path from start to end.
         :rtype: list[Coordinate]
         """
+        m=[[1 if self.get(Coordinate(x, y)) is None or Coordinate(x,y) == start or Coordinate(x,y) == end else 0 for x in range(self.get_size())] for y in range(self.get_size())]
+        grid = Grid(matrix=m)
+        start_node = grid.node(start.get_x(), start.get_y())
+        end_node = grid.node(end.get_x(), end.get_y())
+        finder = AStarFinder(diagonal_movement=DiagonalMovement.always)
+        path, _ = finder.find_path(start_node, end_node, grid)
+        
+        return [Coordinate(x, y) for x, y in path[1:]]
     
     def path_finding_avoid(self, start: Coordinate, end: Coordinate, avoid_from: Coordinate, avoid_to: Coordinate) -> list[Coordinate]:
         """
@@ -309,16 +324,89 @@ class Map():
         :return: A list of coordinates representing the path from start to end while avoiding the specified area.
         :rtype: list[Coordinate]
         """
-    def find_nearest_empty_spot(self, coordinate: Coordinate) -> Coordinate:
+        
+        matrix=[[1 if self.get(Coordinate(x, y)) is None or Coordinate(x,y) == start or Coordinate(x,y) == end else 0 for x in range(self.get_size())] for y in range(self.get_size())]
+
+        # Mark the avoid area as non-walkable
+        for x in range(avoid_from.get_x(), avoid_to.get_x() + 1):
+            for y in range(avoid_from.get_y(), avoid_to.get_y() + 1):
+                if 0 <= x < self.get_size() and 0 <= y < self.get_size():
+                    matrix[y][x] = 0
+        matrix[end.get_y()][end.get_x()] = 1
+
+        grid = Grid(matrix=matrix)
+        start_node = grid.node(start.get_x(), start.get_y())
+        end_node = grid.node(end.get_x(), end.get_y())
+        finder = AStarFinder(diagonal_movement=DiagonalMovement.always)
+        path, _ = finder.find_path(start_node, end_node, grid)
+
+        return [Coordinate(x, y) for x, y in path[1:]]
+    
+    def path_finding_non_diagonal(self, start: Coordinate, end: Coordinate) -> list[Coordinate]:
         """
-        Find the nearest empty spot to a given coordinate.
+        Find the path for a unit to go from start to end without diagonal movement.
+
+        :param start: The starting coordinate.
+        :type start: Coordinate
+        :param end: The ending coordinate.
+        :type end: Coordinate
+        :return: A list of coordinates representing the path from start to end without diagonal movement.
+        :rtype: list[Coordinate]
+        """
+        m=[[1 if self.get(Coordinate(x, y)) is None or Coordinate(x,y) == start or Coordinate(x,y) == end else 0 for x in range(self.get_size())] for y in range(self.get_size())]
+        grid = Grid(matrix=m)
+        start_node = grid.node(start.get_x(), start.get_y())
+        end_node = grid.node(end.get_x(), end.get_y())
+        finder = AStarFinder(diagonal_movement=DiagonalMovement.never)
+        path, _ = finder.find_path(start_node, end_node, grid)
+        
+        return [Coordinate(x, y) for x, y in path[1:]]
+    def find_nearest_empty_zones(self, coordinate: Coordinate, size: int) -> list[Coordinate]:
+        """
+        Find the nearest empty zone to a given coordinate.
 
         :param coordinate: The starting coordinate.
         :type coordinate: Coordinate
+        :param size: The size of the zone.
+        :type size: int
         :return: The nearest empty coordinate.
-        :rtype: Coordinate
+        :rtype: list[Coordinate]
         """
-    def find_nearest_object(self, coordinate: Coordinate, object_type: type) -> Coordinate:
+        map = self.capture()
+        zone_list = []
+        radius = 1
+        size += 5
+        size_checker = GameObject("", "",1)
+        size_checker.set_size(size)
+        while radius < map.get_size():
+            for x in range(coordinate.get_x() - radius, coordinate.get_x() + radius + 1):
+                if map.check_placement(size_checker, Coordinate(x, coordinate.get_y() - radius)):
+                    current = Coordinate(x,coordinate.get_y() - radius)
+                    zone_list.append(current+5)
+                    map.add(size_checker, current)
+                if map.check_placement(size_checker, Coordinate(x, coordinate.get_y() + radius)):
+                    current = Coordinate(x, coordinate.get_y() + radius)
+                    zone_list.append(current+5)
+                    map.add(size_checker,current)
+            
+            for y in range(coordinate.get_y() - radius, coordinate.get_y() + radius + 1):
+                if map.check_placement(size_checker, Coordinate(coordinate.get_x() - radius, y)):
+                    current = Coordinate(coordinate.get_x() - radius, y)
+                    zone_list.append(current + 5)
+                    map.add(size_checker,current)
+                if map.check_placement(size_checker, Coordinate(coordinate.get_x() + radius, y)):
+                    current = Coordinate(coordinate.get_x() + radius, y)
+                    zone_list.append(current+5)
+                    map.add(size_checker, current)
+            radius += 1
+            if size ==6 and len(zone_list) > 0:
+                break
+        return zone_list
+                    
+
+
+    
+    def find_nearest_objects(self, coordinate: Coordinate, object_type: type) -> list[Coordinate]:
         """
         Find the nearest object of the same type to a given coordinate.
 
@@ -326,9 +414,29 @@ class Map():
         :type coordinate: Coordinate
         :param object_type: The type of the object to find.
         :type object_type: type
-        :return: The coordinate of the nearest object of the same type.
-        :rtype: Coordinate
+        :return: The list of coordinate of nearest objects of the same type.
+        :rtype: List[Coordinate]
         """
+        visited = set()
+        queue = [coordinate]
+        list_of_objects = []
+        while queue:
+            current = queue.pop(0)
+            if current in visited:
+                continue
+            visited.add(current)
+            if isinstance(self.get(current), object_type):
+                list_of_objects.append(current)
+            # Include farms when searching for resources
+            if object_type == Resource and isinstance(self.get(current), Farm):
+                list_of_objects.append(current)
+            for dx, dy in Map.DIRECTIONS:
+                neighbor = Coordinate(current.get_x() + dx, current.get_y() + dy)
+                if Coordinate(0,0) <= neighbor <= Coordinate(self.get_size() - 1, self.get_size() - 1):
+                    queue.append(neighbor)
+
+        return list_of_objects
+    
     def find_nearest_enemies(self, coordinate: Coordinate, player: 'Player') -> list[Coordinate]:
         """
         Find the nearest enemies to a given coordinate.
@@ -339,7 +447,10 @@ class Map():
         :type player: Player
         :return: A list of coordinates of the nearest enemies.
         :rtype: list[Coordinate]
-        """ 
+        """
+        list_of_enemies_coordinate = [coord for coord in self.find_nearest_objects(coordinate, Entity) if self.get(coord).get_player() == player]
+        return list_of_enemies_coordinate
+    
     def capture(self) -> 'Map':
         """
         Copy the map.
