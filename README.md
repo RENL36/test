@@ -1,5 +1,5 @@
 # AIge of EmpAIres
-3<sup>rd</sup> year STI project at [INSA Centre Val de Loire](https://www.insa-centrevaldeloire.fr/), tutored by [M. HUGOT](https://tcs.vhugot.com/).
+3<sup>rd</sup> year STI project at [INSA Centre Val de Loire](https://www.insa-centrevaldeloire.fr/), tutored by [M. HUGOT](https://tcs.vhugot.com/). Made by group 6.
 
 ## Table of Contents
 - [AIge of EmpAIres](#aige-of-empaires)
@@ -54,6 +54,7 @@ python main.py
 ```
 
 ## Team Presentation
+Group 6:
 - [KRILL Maxence](https://github.com/Maxeuh)
 - [MUNT-BURON Killian](https://github.com/Killian0713)
 - [NGUYEN Dinh Huy](https://github.com/dhuy21)
