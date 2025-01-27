@@ -246,6 +246,11 @@ class GameController:
         self.__ai_controller.exit()
         self.__menu_controller.exit()
 
+
+    def get_speed(self) -> int:
+        """Get the current speed."""
+        return self.__view_controller.get_speed()
+
     # TODO: Generate list of players and their units/buildings.
     def update(self) -> None:
         """
@@ -283,4 +288,4 @@ class GameController:
                 self.load_task()
                 self.update() 
                 # Cap the loop time to ensure it doesn't run faster than the desired FPS
-                time.Clock().tick(self.settings.fps.value)
+                time.Clock().tick(self.settings.fps.value * self.get_speed())
