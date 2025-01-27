@@ -42,7 +42,7 @@ class GameController:
         self.__command_list: list[Command] = []
         self.__players: list[Player] = []
         self.__map: Map = self.__generate_map()
-        self.__ai_controller: AIController = AIController(self, 1)
+        self.__ai_controller: AIController = AIController(self,1)
         self.__view_controller: ViewController = ViewController(self)
         self.__assign_AI()
         # self.__ai_controller: AIController = AIController(self)
