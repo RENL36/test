@@ -146,7 +146,7 @@ class TerminalView(BaseView):
         P is used to pause the game.
         TAB is used to pause the game and display the stats menu.
         ECHAP is used to exit the game.
-        F12 is used to take switch view.
+        F9 is used to take switch view.
 
         :return: None
         """
@@ -180,7 +180,7 @@ class TerminalView(BaseView):
             elif key.code == self.__terminal.KEY_ESCAPE:
                 self.exit()
                 self._BaseView__controller.exit()
-            elif key.code == self.__terminal.KEY_F12:
+            elif key.code == self.__terminal.KEY_F9:
                 self._BaseView__controller.switch_view()
 
             self.__from_coord = Coordinate(

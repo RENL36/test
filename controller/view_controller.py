@@ -46,7 +46,6 @@ class ViewController:
             self.__is_terminal = True
             self.__current_view = TerminalView(self)
         self.start_view()
-        
     
     def display_stats(self) -> None:
         """

@@ -57,8 +57,10 @@ class View2_5D(BaseView):
 
                 self.screen.blit(grass_block, (iso_x, iso_y))
 
-        #  Dessiner les objets à leurs positions
+        # Dessiner les objets à leurs positions
         for coordinate, obj in self.__map.get_map().items():
+            if not coordinate or not obj: continue
+
             x, y = coordinate.get_x(), coordinate.get_y()
 
             iso_x = (x - self.camera_x) * self.tile_size - (y - self.camera_y) * self.tile_size + self.width // 2
@@ -133,6 +135,8 @@ class View2_5D(BaseView):
 
         # Dessiner les objets sur la mini-map
         for coordinate, obj in self.__map.get_map().items():
+            if not coordinate or not obj: continue
+
             x, y = coordinate.get_x(), coordinate.get_y()
             pixel_x = int(minimap_x + x * scale_x)
             pixel_y = int(minimap_y + y * scale_y)
