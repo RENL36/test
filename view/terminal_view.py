@@ -147,7 +147,6 @@ class TerminalView(BaseView):
                 for i, line in enumerate(map_part[:min(len(map_part), self.__terminal_height - 2)]):
                     frame[i + 1] = self.__colored_line(line, frame[i + 1], y)
                     y += 1
-
                 frame = self.__add_coord(frame)
 
                 # Join the frame into a single string to minimize I/O calls
