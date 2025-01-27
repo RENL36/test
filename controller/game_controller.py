@@ -45,7 +45,6 @@ class GameController:
         self.__players: list[Player] = []
         self.__map: Map = self.__generate_map()
         self.__ai_controller: AIController = AIController(self,1)
-        self.__view_controller: ViewController = ViewController(self)
         self.__assign_AI()
         # self.__ai_controller: AIController = AIController(self)
         self.__running: bool = False
@@ -53,13 +52,11 @@ class GameController:
         ai_thread = threading.Thread(target=self.__ai_controller.ai_loop)
         game_thread.start()
         ai_thread.start()
+        self.__view_controller: ViewController = ViewController(self)
         
     def get_commandlist(self):
         return self.__command_list
-
-        
         # self.__ai_controller.__ai_loop()
-        self.game_loop()
         
     def __generate_players(self, number_of_player: int, map: Map ) -> None:
         """
@@ -281,12 +278,12 @@ class GameController:
             player.get_task_manager().execute_tasks()
 
     def game_loop(self) -> None:
-            """
-            The main game loop.
-            """
-            self.start()
-            while self.__running:
-                self.load_task()
-                self.update() 
-                # Cap the loop time to ensure it doesn't run faster than the desired FPS
-                time.Clock().tick(self.settings.fps.value)
+        """
+        The main game loop.
+        """
+        self.start()
+        while self.__running:
+            self.load_task()
+            self.update() 
+            # Cap the loop time to ensure it doesn't run faster than the desired FPS
+            time.Clock().tick(self.settings.fps.value)

@@ -36,13 +36,14 @@ class TerminalView(BaseView):
         self.__map: Map = self._BaseView__controller.get_map()
 
         self.__display_thread = threading.Thread(target=self.__display_loop)
-        self.__input_thread = threading.Thread(target=self.__input_loop)
+        # self.__input_thread = threading.Thread(target=self.__input_loop)
     
     def show(self) -> None:
         """Start the display and input threads."""
         self.__stop_event.clear()
         self.__display_thread.start()
-        self.__input_thread.start()
+        # self.__input_thread.start()
+        self.__input_loop()
     
     def __size(self) -> None:
         """

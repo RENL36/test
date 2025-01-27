@@ -1,5 +1,4 @@
 from controller.game_controller import GameController
-from controller.view_2_5D_controller import View2_5DController
 from util.settings import Settings
 from util.state_manager import GameState, MenuOptions
 from view.menus.menu_view import MenuView
@@ -75,15 +74,3 @@ class MenuController:
         self.state = GameState.PLAYING
         self.__game_controller = GameController(self)
         pass
-
-    def start_2_5D_view(self) -> None:
-        """
-        Starts a new game by creating a View2_5DController instance
-
-        :rtype: None
-        """
-        self.state = GameState.PLAYING
-        self.__game_controller = View2_5DController(self.settings)
-        self.__game_controller.launch_view()
-        # return to the main menu after the 2.5D view is closed
-        self.call_menu()    

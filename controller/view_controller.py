@@ -1,15 +1,18 @@
-from controller.view_2_5D_controller import View2_5DController
 from util.map import Map
 from util.settings import Settings
 from view.base_view import BaseView
+from view.view_2_5D import View2_5D
 from view.terminal_view import TerminalView
 import os, typing, webbrowser
 if typing.TYPE_CHECKING:
     from controller.game_controller import GameController
+import keyboard
+import threading
 
 class ViewController:
     def __init__(self, game_controller: 'GameController') -> None:
         """Initialize the view controller."""
+        self.__is_terminal: bool = True
         self.__game_controller: 'GameController' = game_controller
         self.__current_view: BaseView = TerminalView(self)
         self.start_view()
@@ -36,15 +39,14 @@ class ViewController:
     
     def switch_view(self) -> None:
         """Bascule entre la vue terminale et la vue 2.5D en appuyant sur F12."""
-        if isinstance(self.__current_view, TerminalView):
-            print("⏩ Passage à la vue 2.5D...")
-            self.__view_2_5D_controller = View2_5DController(self.__settings)
-            self.__view_2_5D_controller.launch_view()
-            self.__current_view = self.__view_2_5D_controller  # Mise à jour de la vue actuelle
+        if self.__is_terminal:
+            self.__is_terminal = False
+            self.__current_view = View2_5D(self)
         else:
-            print("⏪ Retour à la vue terminale...")
+            self.__is_terminal = True
             self.__current_view = TerminalView(self)
-            self.start_view()  # Afficher la vue terminale
+        self.start_view()
+        
     
     def display_stats(self) -> None:
         """
