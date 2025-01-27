@@ -290,3 +290,16 @@ class GameController:
                 self.update() 
                 # Cap the loop time to ensure it doesn't run faster than the desired FPS
                 time.Clock().tick(self.settings.fps.value)
+    
+    def load_game(self, map: Map, players: list[Player]) -> None:
+        """
+        Load the game with the given map, players and settings.
+
+        :param map: The map.
+        :type map: Map
+        :param players: The players.
+        :type players: list[Player]
+        """
+        self.__map = map
+        self.__players = players
+        self.__running = True
