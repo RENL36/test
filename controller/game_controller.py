@@ -4,7 +4,7 @@ from util.map import Map
 from util.settings import Settings
 from util.state_manager import MapType
 import typing
-from controller.command import CommandManager, Command, TaskManager, BuildTask
+from controller.command import CommandManager, Command, TaskManager, BuildTask, MoveTask, CollectAndDropTask, SpawnCommand
 from controller.interactions import Interactions
 from model.player.player import Player
 from model.resources.wood import Wood
@@ -18,7 +18,6 @@ if typing.TYPE_CHECKING:
 class GameController:
     """This module is responsible for controlling the game."""
     _instance = None
-
 
     @staticmethod
     def get_instance(menu_controller: 'MenuController'):
@@ -38,7 +37,7 @@ class GameController:
         self.__command_list: list[Command] = []
         self.__players: list[Player] = []
         self.__map: Map = self.__generate_map()
-        self.__ai_controller: AIController = AIController(self,1)
+        self.__ai_controller: AIController = AIController(self, 1)
         self.__view_controller: ViewController = ViewController(self)
         self.__assign_AI()
         self.__running: bool = False
@@ -46,11 +45,9 @@ class GameController:
         ai_thread = threading.Thread(target=self.__ai_controller.ai_loop)
         game_thread.start()
         ai_thread.start()
-
+        
     def get_commandlist(self):
         return self.__command_list
-
-        
     def __generate_players(self, number_of_player: int, map: Map ) -> None:
         """
         Generates the players based on the settings.
@@ -61,15 +58,15 @@ class GameController:
             self.get_players().append(player)
             player.set_command_manager(CommandManager(map, player, self.settings.fps.value, self.__command_list))
             player.set_task_manager(TaskManager(player.get_command_manager()))
-
+    
     def __assign_AI(self)-> None:
         for player in self.get_players():
             player.set_ai(AI(player,None, map))
             player.get_ai().set_strategy(Strategy1(player.get_ai(), 5))
             print(f"Player {player.get_name()} has strat {player.get_ai().get_strategy()}")
-            player.update_centre_coordinate()  
-            
+            player.update_centre_coordinate()
 
+        
     def __generate_map(self) -> Map:
         """
         Generates a map based on the settings.
@@ -120,15 +117,14 @@ class GameController:
                 ##villager1.set_task(BuildTask(self.get_players()[0].get_command_manager(), villager1, Coordinate(6,6), town_center3))
                 #villager1.set_task(MoveTask(self.get_players()[0].get_command_manager(), villager1, Coordinate(0,20)))
                 #villager1.set_task(CollectAndDropTask(self.get_players()[0].get_command_manager(), villager1, Coordinate(0,10), Coordinate(3,1)))
-
                 ## Init for player 2
                 town_center2 = TownCenter()
-                interactions.place_object(town_center2, Coordinate(100,100))
+                interactions.place_object(town_center2, Coordinate(20,20))
                 interactions.link_owner(self.get_players()[1], town_center2)
                 self.get_players()[1].set_max_population(self.get_players()[1].get_max_population()+town_center2.get_capacity_increase())
 
                 villager2 = Villager()
-                interactions.place_object(villager2, Coordinate(90,90))
+                interactions.place_object(villager2, Coordinate(20,19))
                 interactions.link_owner(self.get_players()[1], villager2)
         return map_generation
     
@@ -172,7 +168,7 @@ class GameController:
             try:
                 #print(f"Command {command} is being executed")
                 command.run_command()
-            except ValueError as e:
+            except (ValueError, AttributeError) as e:
                #print(e)
                 #print("Command failed.")
                 command.remove_command_from_list(self.__command_list)

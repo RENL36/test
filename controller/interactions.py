@@ -6,13 +6,14 @@ from util.coordinate import Coordinate
 from model.resources.resource import Resource
 from model.units.villager import Villager
 from model.buildings.building import Building
+from model.buildings.farm import Farm
 from model.entity import Entity
 
 
 class Interactions:
     def __init__(self, map: Map) -> None:
         self.__map: Map = map
-        
+
     def get_map(self) -> Map:
         """
         Returns the map.
@@ -62,20 +63,28 @@ class Interactions:
         :type target_coord: Coordinate
         """
         if attacker.get_coordinate().distance(target_coord) > attacker.get_range():
-            raise ValueError("Target is out of range.")
+            raise ValueError(f"Target at {target_coord} is out of range {attacker.get_coordinate()}.")
         target: GameObject = self.__map.get(target_coord)
         if target is None:
             raise ValueError("No target found at the given coordinate.")
+        if target.get_player() == attacker.get_player():
+            raise ValueError(f"Can't attack oneself's team: {attacker.get_player()} ")
         if isinstance(target,Resource):
             raise ValueError("Target is a resource.")
         target.damage(attacker.get_attack_per_second()) # Damage the target
 
         if not target.is_alive():
+            target: Entity = target
             self.remove_object(target) # Remove the target from the map
-        if isinstance(target, Building) and target.is_population_increase():
             owner = target.get_player()
-            owner.set_max_population(owner.get_max_population() - target.get_capacity_increase())
-    
+            if isinstance(target, Building) and target.is_population_increase():
+                owner.set_max_population(owner.get_max_population() - target.get_capacity_increase())
+            target.set_player(None)
+            if isinstance(target, Building):
+                owner.remove_building(target)
+            if isinstance(target, Unit):
+                owner.remove_unit(target)
+            
     def collect_resource(self, villager: Villager, resource_coord: Coordinate, amount: int) -> None:
         """
         Collect a resource.
@@ -90,14 +99,19 @@ class Interactions:
             raise ValueError("Resource is out of range.")
         resource: GameObject = self.__map.get(resource_coord)
         if resource is None:
-            raise ValueError("No resource found at the given coordinate.")
-        if not isinstance(resource,Resource):
-            raise ValueError("Target is not a resource.")
-        
-        amount = resource.collect(amount) # Collect the resource
-        villager.stock_resource(resource)
-        if not resource.is_alive():
-            self.remove_object(resource) # Remove the resource from the map
+            raise ValueError(f"No resource found at the given coordinate{resource_coord}.")
+        if isinstance(resource,Farm):
+            amount = resource.get_food().collect(amount)
+            villager.stock_resource(resource.get_food(),1)
+            if not resource.get_food().is_alive():
+                self.remove_object(resource)
+        else:
+            if not isinstance(resource,Resource):
+                raise ValueError("Target is not a resource.")
+            amount = resource.collect(amount) # Collect the resource
+            villager.stock_resource(resource,1)
+            if not resource.is_alive():
+                self.remove_object(resource) # Remove the resource from the map
     
     def drop_resource(self, player: Player, villager: Villager, target_coord: Coordinate) -> None:
         """
@@ -113,9 +127,9 @@ class Interactions:
             raise ValueError("Target is out of range.")
         target: GameObject = self.__map.get(target_coord)
         if target is None:
-            raise ValueError("No target found at the given coordinate.")
+            raise ValueError(f"No target found at the given coordinate {target_coord}.")
         if not isinstance(target, Building):
-            raise ValueError("Target is not a building.")
+            raise ValueError(f"Target is not a building.{target_coord}")
         if not target.is_resources_drop_point():
             raise ValueError("Target is not a resource drop point.")
         

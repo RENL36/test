@@ -6,6 +6,9 @@ from model.units.unit import Unit
 from util.coordinate import Coordinate
 from model.resources.resource import Resource
 from model.units.villager import Villager
+from model.units.horseman import Horseman
+from model.units.swordsman import Swordsman
+from model.units.archer import Archer
 from model.buildings.building import Building
 from model.entity import Entity
 from enum import Enum
@@ -24,6 +27,9 @@ class UnitSpawner(dict[str, Unit]):
     """This class is responsible for storing the unit spawner."""
     def __init__(self) -> None:
         self["Town Center"] = Villager()
+        self["Barracks"] = Swordsman()
+        self["Archery Range"] = Archer()
+        self["Stable"] = Horseman()
 class Command(ABC):
     """This class is responsible for executing commands."""
 
@@ -138,16 +144,9 @@ class Command(ABC):
         :param command_list: The list where the command will be removed.
         :type command_list: list
         """
-        command_list.remove(self)
-    def __eq__(self, other: 'Command') -> bool:
-        """
-        Compares the command with another command.
-        :param other: The other command to compare.
-        :type other: Command
-        :return: True if the commands are equal, False otherwise.
-        :rtype: bool
-        """
-        return self.__entity == other.get_entity() and self.__process == other.get_process()
+        if self in command_list:
+            command_list.remove(self)
+
     @abstractmethod
     def run_command(self):
         """
@@ -155,6 +154,8 @@ class Command(ABC):
         This method must be implemented by the subclasses.
         """
         pass
+    def __repr__(self):
+        return f"{self.get_entity()} of {self.get_player()} at {self.get_entity().get_coordinate()} doing {self.get_process()}. Tick: {self.get_tick()}. ///"
     
 
 class SpawnCommand(Command):
@@ -179,33 +180,50 @@ class SpawnCommand(Command):
         self.set_tick(int(self.get_time() * convert_coeff))
         self.__target_coord = target_coord
         self.__command_list = command_list
-        self.__place_holder: GameObject = GameObject("Place Holder",'x',0)
+        self.__place_holder: GameObject = GameObject("Place Holder",'x',9999)
+        self.__start: bool = True
         super().push_command_to_list(command_list)
-
+        #print(f"Spawning {self} for {self.get_player().get_name()}, at {self.__target_coord}")
+    def get_target_coord(self) -> Coordinate:
+        """
+        Returns the target coordinate where the entity will be spawned.
+        :return: The target coordinate where the entity will be spawned.
+        :rtype: Coordinate
+        """
+        return self.__target_coord
     def run_command(self):
         """
         Runs the spawn command.
         """
-        if self.get_tick() == int(self.get_convert_coeff() * self.get_time()):
+        #print(f"Spawning {self} for {self.get_player().get_name()}, {self.get_tick()} compared to {int(self.get_convert_coeff() * self.get_time())}")
+        if self.__start:
+            self.__start = False
             if self.get_player().get_unit_count() >= self.get_player().get_max_population():
-                super().remove_command_from_list()
+                super().remove_command_from_list(self.__command_list)
                 raise ValueError("Population limit reached.")
             if not all(self.get_player().check_consume(resource, amount) for resource, amount in UnitSpawner()[self.get_entity().get_name()].get_cost().items()):
-                super().remove_command_from_list()
-                raise ValueError("Not enough resources.")
+                super().remove_command_from_list(self.__command_list)
+                raise ValueError(f"Not enough resources. Needing {UnitSpawner()[self.get_entity().get_name()].get_cost()} while having {self.get_player().get_resources()}")
+            if not self.get_interactions().get_map().check_placement(self.__place_holder, self.__target_coord):
+                super().remove_command_from_list(self.__command_list)
+                raise ValueError("Invalid placement.")
             for resource, amount in UnitSpawner()[self.get_entity().get_name()].get_cost().items():
                 self.get_player().consume(resource, amount)
+                #print(f"Player {self.get_player().get_name()} consumed {amount} {resource}")
             self.get_interactions().place_object(self.__place_holder, self.__target_coord)
-        
-        if self.get_tick() > 0:
-            self.set_tick(self.get_tick() - 1)
-        else:
-            self.get_interactions().remove_object(self.__place_holder)
-            spawned: Unit = UnitSpawner()[self.get_entity().get_name()]
-            self.get_interactions().place_object(spawned, self.__target_coord)
-            self.get_interactions().link_owner(self.get_player(), spawned)
-            super().remove_command_from_list(self.__command_list)
 
+        
+        if self.get_tick() <= 0:
+            if self in self.__command_list:
+                self.get_interactions().remove_object(self.__place_holder)
+                spawned: Unit = UnitSpawner()[self.get_entity().get_name()]
+                self.get_interactions().place_object(spawned, self.__target_coord)
+                self.get_interactions().link_owner(self.get_player(), spawned)
+                
+                super().remove_command_from_list(self.__command_list)
+            else:
+                pass
+        self.set_tick(self.get_tick() - 1)
 class MoveCommand(Command):
     """This class is responsible for executing move commands."""
     
@@ -226,18 +244,19 @@ class MoveCommand(Command):
         self.set_tick(int(self.get_time() * convert_coeff))
         self.__target_coord = target_coord
         self.__command_list = command_list
+        self.__start: bool = True
         super().push_command_to_list(command_list)
     
     def run_command(self):
         """
         Runs the move command.
         """
-        if self.get_tick() == int(self.get_convert_coeff() * self.get_time()):
+        if self.__start:
+            self.__start = False
             self.get_interactions().move_unit(self.get_entity(), self.__target_coord)
-        if self.get_tick() > 0:
-            self.set_tick(self.get_tick() - 1)
-        else:
+        if self.get_tick() <=0:
             super().remove_command_from_list(self.__command_list)
+        self.set_tick(self.get_tick() - 1)
     
 class AttackCommand(Command):
     """This class is responsible for executing attack commands."""
@@ -261,18 +280,20 @@ class AttackCommand(Command):
         self.set_tick(int(self.get_time() * convert_coeff))
         self.__target_coord = target_coord
         self.__command_list = command_list
+        self.__start: bool = True
         super().push_command_to_list(command_list)
     
     def run_command(self):
         """
         Runs the attack command.
         """
-        if self.get_tick() == int(self.get_convert_coeff() * self.get_time()):
+        if self.__start:
+            self.__start = False
             self.get_interactions().attack(self.get_entity(), self.__target_coord)
-        if self.get_tick() > 0:
-            self.set_tick(self.get_tick() - 1)
-        else:
+    
+        if self.get_tick() <= 0:
             super().remove_command_from_list(self.__command_list)
+        self.set_tick(self.get_tick() - 1)
 
 class CollectCommand(Command):
     """This class is responsible for executing collect commands."""
@@ -302,11 +323,11 @@ class CollectCommand(Command):
         """
         Runs the collect command.
         """
-        if self.get_tick() > 0:
-            self.set_tick(self.get_tick() - 1)
-        else:
-            self.get_interactions().collect_resource(self.get_entity(), self.__target_coord, 1)
-            super().remove_command_from_list(self.__command_list)
+        if self.get_tick() <= 0:
+            if self in self.__command_list:
+                self.get_interactions().collect_resource(self.get_entity(), self.__target_coord,1)
+                super().remove_command_from_list(self.__command_list)
+        self.set_tick(self.get_tick() - 1)
 
 class DropCommand(Command):
     """This class is responsible for executing drop commands."""
@@ -362,35 +383,37 @@ class BuildCommand(Command):
         self.__building = building
         self.__target_coord = target_coord
         self.__command_list = command_list
-        self.__place_holder: GameObject = GameObject("Place Holder",'x',0)
+        self.__place_holder: GameObject = GameObject("Place Holder",'x',9999)
         self.__place_holder.set_size(building.get_size())
+        self.__start: bool = True
         super().push_command_to_list(command_list)
-
+    
     def run_command(self):
         """
         Runs the build command.
         """
         if not self.get_entity().get_coordinate().is_adjacent(self.__target_coord):
-            super().remove_command_from_list()
+            super().remove_command_from_list(self.__command_list)
             raise ValueError("Target is out of range.")
         # To do: implement multi-build and another adjacent check
-        if self.get_tick() == int(self.get_convert_coeff() * self.get_time()):
+        if self.__start:
+            self.__start = False
             if not all(self.get_player().check_consume(resource, amount) for resource, amount in self.__building.get_cost().items()):
                 super().remove_command_from_list(self.__command_list)
-                raise ValueError("Not enough resources.")
+                raise ValueError(f"Player: {self.get_player().get_name() } don't have enough resources. Needing {self.__building.get_cost()} while having {self.get_player().get_resources()}")
             for resource, amount in self.__building.get_cost().items():
                 self.get_player().consume(resource, amount)
             self.get_interactions().place_object(self.__place_holder, self.__target_coord)
         
-        if self.get_tick() > 0:
-            self.set_tick(self.get_tick() - 1)
-        else:
-            self.get_interactions().remove_object(self.__place_holder)
-            self.get_interactions().place_object(self.__building, self.__target_coord)
-            self.get_interactions().link_owner(self.get_player(), self.__building)
-            if self.__building.is_population_increase():
-                self.get_player().set_max_population(self.get_player().get_max_population() + self.__building.get_capacity_increase())
+        if self.get_tick() <= 0:
+            if self in self.__command_list:
+                self.get_interactions().remove_object(self.__place_holder)
+                self.get_interactions().place_object(self.__building, self.__target_coord)
+                self.get_interactions().link_owner(self.get_player(), self.__building)
+                if self.__building.is_population_increase():
+                    self.get_player().set_max_population(self.get_player().get_max_population() + self.__building.get_capacity_increase())
             super().remove_command_from_list(self.__command_list)
+        self.set_tick(self.get_tick() - 1)
 
 
 class CommandManager:
@@ -467,7 +490,17 @@ class Task:
         self.__target_coord: Coordinate = target_coord
         self.__command_manager : CommandManager = command_manager
         self.__waiting: bool = False
-    
+        self.__name: str = ""
+    def get_name(self) -> str:
+        """
+        Returns the name of the task.
+        :return: The name of the task.
+        :rtype: str
+        """
+        return self.__name
+    def __repr__(self):
+        return f"{self.get_entity()} of {self.get_entity().get_player()} have {self.get_name()}. Target {self.__target_coord}, status: {self.get_waiting()} ///////"
+
     @abstractmethod
     def execute_task(self):
         """
@@ -517,22 +550,7 @@ class Task:
     
 
 class MoveTask(Task):
-    def __init__(self, command_manager: CommandManager, unit: Unit, target_coord: Coordinate) -> None:
-        """
-        Initializes the MoveTask with the given command_manager, entity and target_coord.
-        :param command_manager: The command manager of the player that will execute the task.
-        :type command_manager: CommandManager
-        :param entity: The entity that will execute the task.
-        :type entity: Entity
-        :param target_coord: The target coordinate where the entity will move.
-        :type target_coord: Coordinate
-        """
-        super().__init__(command_manager, unit, target_coord)
-        self.__path: list[Coordinate] = self.get_command_manager().get_map().path_finding(self.get_entity().get_coordinate(), self.get_target_coord())
-        self.__step: int = 0
-        self.__command: Command = None
-    
-    def __init__(self,command_manager: CommandManager, unit: Unit, target_coord: Coordinate, avoid_from_coord: Coordinate, avoid_to_coord: Coordinate):
+    def __init__(self, command_manager: CommandManager, unit: Unit, target_coord: Coordinate, avoid_from_coord: Coordinate = None, avoid_to_coord: Coordinate = None, diagonal: bool = True) -> None:
         """
         Initializes the MoveTask with the given command_manager, entity, target_coord, avoid_from_coord and avoid_to_coord.
         :param command_manager: The command manager of the player that will execute the task.
@@ -547,21 +565,33 @@ class MoveTask(Task):
         :type avoid_to_coord: Coordinate
         """
         super().__init__(command_manager, unit, target_coord)
-        self.__path: list[Coordinate] = self.get_command_manager().get_map().path_finding_avoid(self.get_entity().get_coordinate(), self.get_target_coord(), avoid_from_coord, avoid_to_coord)
+        if avoid_from_coord and avoid_to_coord:
+            self.__path: list[Coordinate] = self.get_command_manager().get_map().path_finding_avoid(self.get_entity().get_coordinate(), self.get_target_coord(), avoid_from_coord, avoid_to_coord)
+        else:
+            if diagonal:
+                self.__path: list[Coordinate] = self.get_command_manager().get_map().path_finding(self.get_entity().get_coordinate(), self.get_target_coord())
+            else:
+                self.__path: list[Coordinate] = self.get_command_manager().get_map().path_finding_non_diagonal(self.get_entity().get_coordinate(), self.get_target_coord())
+        #print(self.__path)
         self.__step: int = 0
         self.__command: Command = None
+        self.__name : str = "MoveTask"
 
     
     def execute_task(self):
         """
         Execute the move task.
         """
-        if not (self.get_waiting() or self.get_entity().get_coordinate().is_adjacent(self.get_target_coord()) ) :
-            self.__command = self.get_command_manager().command(self.get_entity(), Process.MOVE, self.__path[self.__step])
-            self.set_waiting(True)
-        if self.__command.get_tick() == 0:
+        try:
+            if not (self.get_waiting()):
+                self.__command = self.get_command_manager().command(self.get_entity(), Process.MOVE, self.__path[self.__step])
+                self.set_waiting(True)
+            if self.__command.get_tick() <= 0:
+                self.set_waiting(False)
+                self.__step += 1
+        except ValueError:
             self.set_waiting(False)
-            self.__step += 1
+            self.get_entity().set_task(None)
             
 
 class KillTask(Task):
@@ -578,6 +608,7 @@ class KillTask(Task):
         super().__init__(command_manager, entity, target_coord)
         self.__move_task: MoveTask = MoveTask(self.get_command_manager(), self.get_entity(), self.get_target_coord())
         self.__command: Command = None
+        self.__name : str = "KillTask"
         
     
     def execute_task(self):
@@ -586,19 +617,21 @@ class KillTask(Task):
         """
         attacker: Unit = self.get_entity()
         if not attacker.get_coordinate().is_in_range(self.get_target_coord(), attacker.get_range()): ## out of range case MOVE
-            if attacker.get_coordinate().is_adjacent() and not self.__move_task.get_waiting(): # diagonal out of range case
-                coord1 : Coordinate = Coordinate(attacker.get_coordinate().get_x(), self.get_target_coord().get_y())
-                coord2 : Coordinate = Coordinate(self.get_target_coord().get_x(), attacker.get_coordinate().get_y())
-                end_coord : Coordinate = (coord1 + Coordinate(0,1) ) if self.get_command_manager().get_map().check_placement(attacker, coord1) else (coord2 + Coordinate(1,0) )
-                self.get_command_manager().command(attacker, Process.MOVE, end_coord)
-            if not attacker.get_coordinate().is_adjacent():
+            if attacker.get_coordinate().is_adjacent(self.get_target_coord()) and not self.__move_task.get_waiting(): # diagonal out of range case
+                self.__move_task = MoveTask(self.get_command_manager(), self.get_entity(), self.get_target_coord(), None, None, False)
+                self.__move_task.execute_task()
+            if not attacker.get_coordinate().is_adjacent(self.get_target_coord()):
                 self.__move_task.execute_task()
         else: ## in range case ATTACK
             if not self.get_waiting():
-                self.get_command_manager().command(self.get_entity(), Process.ATTACK, self.get_target_coord())
-                self.set_waiting(True)
-            if self.__command.get_tick() == 0:
+                if self.get_command_manager().get_map().get(self.get_target_coord()):
+                    self.__command = self.get_command_manager().command(self.get_entity(), Process.ATTACK, self.get_target_coord())
+                    self.set_waiting(True)
+                else:
+                    self.get_entity().set_task(None)
+            if not self.__command or self.__command.get_tick() <= 0:
                 self.set_waiting(False)
+                self.get_entity().set_task(None)
             
  ##reminder: if raise then pass by TaskManager       
 
@@ -618,29 +651,46 @@ class CollectAndDropTask(Task):
         super().__init__(command_manager, villager, target_coord)
         self.__drop_coord: Coordinate = drop_coord
         self.__move_task_go: MoveTask = MoveTask(self.get_command_manager(), self.get_entity(), self.get_target_coord())
-        self.__move_task_back: MoveTask = MoveTask(self.get_command_manager(), self.get_entity(), self.__drop_coord)
-        self.__target_resource: Resource = self.get_command_manager().get_map().get(self.get_target_coord())
+        self.__move_task_back: MoveTask = None
+        self.__target_resource: Resource = self.get_command_manager().get_map().get(self.get_target_coord()) if isinstance(self.get_command_manager().get_map().get(self.get_target_coord()), Resource) else self.get_command_manager().get_map().get(self.get_target_coord()).get_food()
         self.__command: Command = None
+        self.__name : str = "CollectAndDropTask"
+    
+    def calculate_path(self):
+        """
+        Calculate the path to the target.
+        """
+        self.__move_task_go = MoveTask(self.get_command_manager(), self.get_entity(), self.get_target_coord())
+    def calculate_way_back(self):
+        """
+        Calculate the way back to the drop point.
+        """
+        if self.__move_task_back is None:
+            self.__move_task_back: MoveTask = MoveTask(self.get_command_manager(), self.get_entity(), self.__drop_coord)
     
     def execute_task(self):
         """
         Execute the collect and drop task.
         """
         collecter : Villager = self.get_entity()
-        if collecter.get_inventory[self.__target_resource] < collecter.get_inventory_size(): ## COLLECT
+        if self.__target_resource and collecter.get_inventory()[self.__target_resource] < collecter.get_inventory_size(): ## COLLECT
             if not self.get_entity().get_coordinate().is_adjacent(self.get_target_coord()): ## out of range case MOVE  
                 self.__move_task_go.execute_task()
             else: ## in range case COLLECT
                 if not self.get_waiting():
-                    self.get_command_manager().command(self.get_entity(), Process.COLLECT, self.get_target_coord())
+                    self.__command = self.get_command_manager().command(self.get_entity(), Process.COLLECT, self.get_target_coord())
                     self.set_waiting(True)
-                if self.__command.get_tick() == 0:
+                if not self.__command or self.__command.get_tick() <= 0:
                     self.set_waiting(False)
+                    self.get_entity().set_task(None)
         else: ##DROP
             if not self.get_entity().get_coordinate().is_adjacent(self.__drop_coord): ## out of range case MOVE  
+                self.calculate_way_back()
                 self.__move_task_back.execute_task()
             else:
-                self.get_command_manager().command(self.get_entity(), Process.DROP, self.__drop_coord)
+                self.__command = self.get_command_manager().command(self.get_entity(), Process.DROP, self.__drop_coord)
+                self.get_entity().set_task(None)
+
                 
 class BuildTask(Task):
     def __init__(self, command_manager: CommandManager, villager: Villager, target_coord: Coordinate, building: Building) -> None:
@@ -657,8 +707,9 @@ class BuildTask(Task):
         """
         super().__init__(command_manager, villager, target_coord)
         self.__building: Building = building
-        self.__move_task: MoveTask = MoveTask(self.get_command_manager(), self.get_entity(), self.get_target_coord(), self.get_target_coord(), self.get_target_coord() + self.__building.get_size())
+        self.__move_task: MoveTask = MoveTask(self.get_command_manager(), self.get_entity(), self.get_target_coord(), self.get_target_coord(), self.get_target_coord() + (self.__building.get_size()-1))
         self.__command: Command = None
+        self.__name : str = "BuildTask"
     
     def execute_task(self):
         """
@@ -670,7 +721,7 @@ class BuildTask(Task):
             if not self.get_waiting():
                     self.__command =self.get_command_manager().command(self.get_entity(), Process.BUILD, self.get_target_coord(), self.__building) 
                     self.set_waiting(True)
-            if self.__command.get_tick() == 0:
+            if not self.__command or self.__command.get_tick() <= 0:
                     self.set_waiting(False)
                     self.get_entity().set_task(None)
             
@@ -684,12 +735,18 @@ class SpawnTask(Task):
         :param building: The building that will execute the task.
         :type building: Building
         """
+        target_coord : Coordinate = command_manager.get_map().find_nearest_empty_zones(building.get_coordinate(), 1)[0]
         super().__init__(command_manager, building, target_coord)
-        target_coord : Coordinate = self.get_command_manager().get_map().find_nearest_empty_spot(building.get_coordinate())
-        
+        self.__name : str = "SpawnTask"
+        self.__command: Command = None
     
     def execute_task(self):
-        self.get_command_manager().command(self.get_entity(), Process.SPAWN, self.get_target_coord())
+        if not self.get_waiting():
+            self.__command =self.get_command_manager().command(self.get_entity(), Process.SPAWN, self.get_target_coord())
+            self.set_waiting(True)
+        if not self.__command or self.__command.get_tick() <= (self.__command.get_convert_coeff() * 3):
+            self.set_waiting(False)
+            self.get_entity().set_task(None)
 
 class TaskManager:
     def __init__(self, command_manager: CommandManager) -> None:
@@ -708,12 +765,17 @@ class TaskManager:
                 if unit.get_task() is not None:
                     try:
                         unit.get_task().execute_task()
-                    except ValueError:
+                    except (ValueError,IndexError) as e:
+                        #print(f"Error executing task by {unit.get_name()} at {unit.get_coordinate()}")
+                        #import traceback
+                        #print(traceback.format_exc())
+                        #print(e)
+                        #exit()
                         unit.set_task(None)
         for building in self.__command_manager.get_player().get_buildings():
             if building.get_task() is not None:
                 try:
                     building.get_task().execute_task()
-                except ValueError:
+                except (ValueError, IndexError):
                     building.set_task(None)
 
