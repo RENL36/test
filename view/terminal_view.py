@@ -159,18 +159,17 @@ class TerminalView(BaseView):
     def __input_loop(self) -> None:
         """
         Handle the user input to move the viewport.
-        
+
         ZQSD or WASD or arrow keys are used to move the viewport.
         MAJ + ZQSD or MAJ + WASD or MAJ + arrow keys are used to move the viewport by 5 cells.
         P is used to pause the game.
         TAB is used to pause the game and display the stats menu.
         ECHAP is used to exit the game.
         F12 is used to take switch view.
+        V is used to toggle speed between 1 and 60.
 
         :return: None
         """
-        # TODO: Press two keys at the same time
-        # TODO: Press a key and keep it pressed
         while not self.__stop_event.is_set():
             key = self.__terminal.inkey()
             if key in ["z", "w"] or key.code == self.__terminal.KEY_UP:
@@ -202,6 +201,8 @@ class TerminalView(BaseView):
                 self._BaseView__controller.exit()
             elif key.code == self.__terminal.KEY_F12:
                 self._BaseView__controller.switch_view()
+            elif key.lower() == "v":
+                self._BaseView__controller.toggle_speed()
 
             self.__from_coord = Coordinate(
                 max(0, min(self.__map.get_size() - self.__terminal_width + 2, self.__from_coord.get_x())),

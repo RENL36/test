@@ -744,7 +744,7 @@ class SpawnTask(Task):
         if not self.get_waiting():
             self.__command =self.get_command_manager().command(self.get_entity(), Process.SPAWN, self.get_target_coord())
             self.set_waiting(True)
-        if not self.__command or self.__command.get_tick() <= (self.__command.get_convert_coeff() * 3):
+        if not self.__command or self.__command.get_tick() <= (self.__command.get_convert_coeff() * 20):
             self.set_waiting(False)
             self.get_entity().set_task(None)
 

@@ -400,7 +400,7 @@ class Map():
                     zone_list.append(current+1)
                     map.add(size_checker, current)
             radius += 1
-            if size ==6 and len(zone_list) > 0:
+            if size ==2 and len(zone_list) > 0:
                 break
         return zone_list
                     

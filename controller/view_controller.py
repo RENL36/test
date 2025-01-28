@@ -12,7 +12,16 @@ class ViewController:
         """Initialize the view controller."""
         self.__game_controller: 'GameController' = game_controller
         self.__current_view: BaseView = TerminalView(self)
+        self.__speed = 1  # Initialize speed
         self.start_view()
+    
+    def toggle_speed(self) -> None:
+        """Toggle the speed between 1 and 60."""
+        self.__speed = 60 if self.__speed == 1 else 1
+
+    def get_speed(self) -> int:
+        """Get the current speed."""
+        return self.__speed
 
     def start_view(self) -> None:
         """Start the view."""
@@ -195,3 +204,4 @@ class ViewController:
             </div>
             """
         return html
+

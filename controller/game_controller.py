@@ -58,9 +58,6 @@ class GameController:
         return self.__command_list
 
         
-        # self.__ai_controller.__ai_loop()
-        self.game_loop()
-        
     def __generate_players(self, number_of_player: int, map: Map ) -> None:
         """
         Generates the players based on the settings.
@@ -121,8 +118,6 @@ class GameController:
         min_distance = int(self.settings.map_size.value * 0.3)
         for player in self.get_players():
             town_center = TownCenter()
-            interactions.link_owner(player, town_center)
-            player.set_max_population(player.get_max_population() + town_center.get_capacity_increase())
             if player == self.get_players()[0]:
                 while True:
                     coordinate = Coordinate(
@@ -138,8 +133,7 @@ class GameController:
                     self.settings.map_size.value - 1 - first_player_coordinate.get_y() - town_center.get_size() + 1
                 )
             
-            map_generation.add(town_center, coordinate)
-            town_center.set_coordinate(coordinate)
+            interactions.place_object(town_center,coordinate)
             interactions.link_owner(player, town_center)
             player.set_max_population(player.get_max_population() + town_center.get_capacity_increase())
 
@@ -253,6 +247,11 @@ class GameController:
         self.__ai_controller.exit()
         self.__menu_controller.exit()
 
+
+    def get_speed(self) -> int:
+        """Get the current speed."""
+        return self.__view_controller.get_speed()
+
     # TODO: Generate list of players and their units/buildings.
     def update(self) -> None:
         """
@@ -290,7 +289,7 @@ class GameController:
                 self.load_task()
                 self.update() 
                 # Cap the loop time to ensure it doesn't run faster than the desired FPS
-                time.Clock().tick(self.settings.fps.value)
+                time.Clock().tick(self.settings.fps.value * self.get_speed())
     
     def resume(self) -> None:
         """
