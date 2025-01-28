@@ -84,7 +84,7 @@ class LoadMenu:
                 options = self.__get_menu_options()
                 
                 # Ajouter l'option pour revenir en arrière
-                options.insert(0, "Return to Main Menu")
+                options.append("Back")
                 
                 print(self.term.center(self.term.bold_red("Load Game")))
 
@@ -94,8 +94,6 @@ class LoadMenu:
                         print(self.term.on_black(self.term.white(f"→ {option}")))
                     else:
                         print(f"  {option}")
-
-                print("\nUse ↑/↓ to navigate, Enter to select, or 'q' to quit.")
                 
                 key = self.term.inkey()
 
@@ -106,8 +104,8 @@ class LoadMenu:
                 elif key.lower() == 'q':  # Quitter le menu
                     return None
                 elif key.code in [self.term.KEY_ENTER, '\n', '\r']:
-                    # Gérer l'option "Return to Main Menu"
-                    if options[self.current_option] == "Return to Main Menu":
+                    # Gérer l'option "Back"
+                    if options[self.current_option] == "Back":
                         return None
                     # Gérer le cas des messages d'erreur ou sélectionner un fichier valide
                     elif options[self.current_option] in ["No save files found", "Save directory not found"]:
