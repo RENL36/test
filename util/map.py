@@ -1,5 +1,6 @@
 from collections import defaultdict
 from model.game_object import GameObject
+from model.entity import Entity
 from util.coordinate import Coordinate
 from model.entity import Entity
 from model.resources.resource import Resource
@@ -399,12 +400,9 @@ class Map():
                     zone_list.append(current+1)
                     map.add(size_checker, current)
             radius += 1
-            if size ==6 and len(zone_list) > 0:
+            if size ==2 and len(zone_list) > 0:
                 break
         return zone_list
-                    
-
-
     
     def find_nearest_objects(self, coordinate: Coordinate, object_type: type) -> list[Coordinate]:
         """
@@ -461,3 +459,19 @@ class Map():
         new_map = Map(self.__size)
         new_map.__matrix = self.__matrix.copy()
         return new_map
+    
+    def indicate_color(self, coordinate: Coordinate) -> str:
+        """
+        Get the color of the object coordinate.
+
+        :param coordinate: The coordinate to get the color of.
+        :type coordinate: Coordinate
+        :return: The color of the coordinate.
+        :rtype: str
+        """
+        object: GameObject = self.get(coordinate)
+        if object is None:
+            return "white"
+        if isinstance(object, Entity):
+            return object.get_player().get_color()
+        return "white"

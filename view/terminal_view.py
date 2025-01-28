@@ -82,23 +82,51 @@ class TerminalView(BaseView):
         cropped_lines = [line[:map_width] for line in map_lines[:map_height]]
         return cropped_lines
     
-    def __colored_line(self, line: str, frame_line: str) -> str:
+    
+    def __colored_line(self, line: str, frame_line: str, y: int) -> str:
         """
         Color the map elements: uppercase letters in red and bold, lowercase letters in blue, and hide empty spaces.
         Include the frame in the colored line.
         """
+        x = 0
         colored_line = ""
+        abs_y = self.__from_coord.get_y() + y
         for char in line:
-            if char.isupper():
-                colored_line += self.__terminal.bold_red(char)
-            elif char.islower():
-                colored_line += self.__terminal.blue(char)
-            elif char == '·':
+            abs_x = self.__from_coord.get_x() + x
+            if char == '·':
                 colored_line += ' '
+            elif char == 'G':  # Gold 
+                colored_line += f"\033[33mG\033[0m"  # Yellow
+            elif char == 'W':  # Wood
+                colored_line += f"\033[38;5;94mW\033[0m"  # Brown
+            elif char == 'F':  # Food
+                colored_line += f"\033[32mF\033[0m"  # Green
             else:
-                colored_line += char
+                color = self.__map.indicate_color(Coordinate(abs_x, abs_y))
+                if color == "white":
+                    colored_line += char
+                elif color == "blue":
+                    colored_line += f'\033[34m{char}\033[0m'
+                elif color == "red":
+                    colored_line += f'\033[31m{char}\033[0m'
+                elif color == "green":
+                    colored_line += f'\033[32m{char}\033[0m'
+                elif color == "yellow":
+                    colored_line += f'\033[33m{char}\033[0m'
+                elif color == "purple":
+                    colored_line += f'\033[35m{char}\033[0m'
+                elif color == "cyan":
+                    colored_line += f'\033[36m{char}\033[0m'
+                elif color == "pink":
+                    colored_line += f'\033[95m{char}\033[0m'
+                elif color == "orange":
+                    colored_line += f'\033[93m{char}\033[0m'
+                else:
+                    # Default color handling
+                    colored_line += f'\033[33m{char}\033[0m'
+            x += 1
         return frame_line[:1] + colored_line + self.__terminal.normal + frame_line[1 + len(line):]
-    
+
     def __add_coord(self, line: list[str]) -> list[str]:
         """
         Add the top left coordinate on the top left corner of the frame.
@@ -114,8 +142,6 @@ class TerminalView(BaseView):
     def __display_loop(self) -> None:
         """
         Display the map in the terminal and update it each tick (depending on the FPS).
-        The display width and height are set to the terminal size
-        Display is composed of 2 layers: the map and the text ; they don't overlap.
         """
         with self.__terminal.fullscreen(), self.__terminal.cbreak(), self.__terminal.hidden_cursor():
             while not self.__stop_event.is_set():
@@ -129,29 +155,33 @@ class TerminalView(BaseView):
 
                 frame = self.__str_frame()
                 map_part = self.__str_map()
-                print(self.__terminal.clear(), end="")
+                output = []
+                y = 0
                 for i, line in enumerate(map_part[:min(len(map_part), self.__terminal_height - 2)]):
-                    frame[i + 1] = self.__colored_line(line, frame[i + 1])
+                    frame[i + 1] = self.__colored_line(line, frame[i + 1], y)
+                    y += 1
                 frame = self.__add_coord(frame)
-                print("\n".join(frame))
+
+                # Join the frame into a single string to minimize I/O calls
+                output.append("\n".join(frame))
+                print(self.__terminal.move(0, 0) + "".join(output), end="")  # Use cursor positioning
                 self.__terminal.flush()
                 time.sleep(1 / self._BaseView__controller.get_settings().fps.value)
 
     def __input_loop(self) -> None:
         """
         Handle the user input to move the viewport.
-        
+
         ZQSD or WASD or arrow keys are used to move the viewport.
         MAJ + ZQSD or MAJ + WASD or MAJ + arrow keys are used to move the viewport by 5 cells.
         P is used to pause the game.
         TAB is used to pause the game and display the stats menu.
         ECHAP is used to exit the game.
         F9 is used to take switch view.
+        V is used to toggle speed between 1 and 60.
 
         :return: None
         """
-        # TODO: Press two keys at the same time
-        # TODO: Press a key and keep it pressed
         while not self.__stop_event.is_set():
             key = self.__terminal.inkey()
             if key in ["z", "w"] or key.code == self.__terminal.KEY_UP:
@@ -162,6 +192,8 @@ class TerminalView(BaseView):
                 self.__from_coord += Coordinate(-1, 0)
             elif key == "d" or key.code == self.__terminal.KEY_RIGHT:
                 self.__from_coord += Coordinate(1, 0)
+            elif key in ["U", "u"]:  # Sauvegarde
+                self._BaseView__controller.save_game()
             elif key in ["Z", "W"]:
                 self.__from_coord += Coordinate(0, -5)
             elif key == "S":
@@ -173,15 +205,19 @@ class TerminalView(BaseView):
             elif key in ["p", "P"]:
                 self.__pause()
                 self._BaseView__controller.pause()
+            
             elif key.code == self.__terminal.KEY_TAB:
-                self.__pause()
-                self._BaseView__controller.pause()
+                # commented pause for now since it breaks
+                # self.__pause()
+                # self._BaseView__controller.pause()
                 self._BaseView__controller.display_stats()
             elif key.code == self.__terminal.KEY_ESCAPE:
                 self.exit()
                 self._BaseView__controller.exit()
             elif key.code == self.__terminal.KEY_F9:
                 self._BaseView__controller.switch_view()
+            elif key.lower() == "v":
+                self._BaseView__controller.toggle_speed()
 
             self.__from_coord = Coordinate(
                 max(0, min(self.__map.get_size() - self.__terminal_width + 2, self.__from_coord.get_x())),

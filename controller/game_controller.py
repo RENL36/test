@@ -45,6 +45,7 @@ class GameController:
         self.__players: list[Player] = []
         self.__map: Map = self.__generate_map()
         self.__ai_controller: AIController = AIController(self,1)
+        self.__view_controller: ViewController = ViewController(self)
         self.__assign_AI()
         # self.__ai_controller: AIController = AIController(self)
         self.__running: bool = False
@@ -52,11 +53,10 @@ class GameController:
         ai_thread = threading.Thread(target=self.__ai_controller.ai_loop)
         game_thread.start()
         ai_thread.start()
-        self.__view_controller: ViewController = ViewController(self)
         
     def get_commandlist(self):
         return self.__command_list
-        # self.__ai_controller.__ai_loop()
+
         
     def __generate_players(self, number_of_player: int, map: Map ) -> None:
         """
@@ -118,15 +118,19 @@ class GameController:
         min_distance = int(self.settings.map_size.value * 0.3)
         for player in self.get_players():
             town_center = TownCenter()
-            interactions.link_owner(player, town_center)
-            player.set_max_population(player.get_max_population() + town_center.get_capacity_increase())
             if player == self.get_players()[0]:
                 while True:
-                    coordinate = Coordinate(
-                        random.randint(min_distance, self.settings.map_size.value - min_distance - 1),
-                        random.randint(min_distance, self.settings.map_size.value - min_distance - 1)
+                    # Get a random coordinate. If it is at less than min_distance from the center, try again.
+                    center_size = 2 if map_generation.get_size() % 2 == 0 else 1
+                    center_coordinate = Coordinate((map_generation.get_size() - center_size) // 2, (map_generation.get_size() - center_size) // 2)
+                    coordinate = Coordinate((map_generation.get_size() - center_size) // 2, (map_generation.get_size() - center_size) // 2)
+                    while coordinate.distance(center_coordinate) < min_distance:
+                        coordinate = Coordinate(random.randint(0, self.settings.map_size.value - 1), random.randint(0, self.settings.map_size.value - 1))
+                    coordinate_mirror = Coordinate(
+                        self.settings.map_size.value - 1 - coordinate.get_x() - town_center.get_size() + 1,
+                        self.settings.map_size.value - 1 - coordinate.get_y() - town_center.get_size() + 1
                     )
-                    if map_generation.check_placement(town_center, coordinate):
+                    if map_generation.check_placement(town_center, coordinate) and map_generation.check_placement(town_center, coordinate_mirror):
                         break
                 first_player_coordinate = coordinate
             else:
@@ -135,8 +139,7 @@ class GameController:
                     self.settings.map_size.value - 1 - first_player_coordinate.get_y() - town_center.get_size() + 1
                 )
             
-            map_generation.add(town_center, coordinate)
-            town_center.set_coordinate(coordinate)
+            interactions.place_object(town_center,coordinate)
             interactions.link_owner(player, town_center)
             player.set_max_population(player.get_max_population() + town_center.get_capacity_increase())
 
@@ -242,12 +245,18 @@ class GameController:
     def pause(self) -> None:
         """Pauses the game."""
         self.__running = False
+        self.__ai_controller.pause()
     
     def exit(self) -> None:
         """Exits the game."""
         self.__running = False
         self.__ai_controller.exit()
         self.__menu_controller.exit()
+
+
+    def get_speed(self) -> int:
+        """Get the current speed."""
+        return self.__view_controller.get_speed()
 
     # TODO: Generate list of players and their units/buildings.
     def update(self) -> None:
@@ -278,12 +287,35 @@ class GameController:
             player.get_task_manager().execute_tasks()
 
     def game_loop(self) -> None:
+            """
+            The main game loop.
+            """
+            self.start()
+            while self.__running:
+                self.load_task()
+                self.update() 
+                # Cap the loop time to ensure it doesn't run faster than the desired FPS
+                time.Clock().tick(self.settings.fps.value * self.get_speed())
+    
+    def resume(self) -> None:
         """
-        The main game loop.
+        Resumes the game.
         """
         self.start()
-        while self.__running:
-            self.load_task()
-            self.update() 
-            # Cap the loop time to ensure it doesn't run faster than the desired FPS
-            time.Clock().tick(self.settings.fps.value)
+        game_thread = threading.Thread(target=self.game_loop)
+        ai_thread = threading.Thread(target=self.__ai_controller.ai_loop)
+        game_thread.start()
+        ai_thread.start()
+    
+    def load_game(self, map: Map, players: list[Player]) -> None:
+        """
+        Load the game with the given map, players and settings.
+
+        :param map: The map.
+        :type map: Map
+        :param players: The players.
+        :type players: list[Player]
+        """
+        self.__map = map
+        self.__players = players
+        self.__running = True
