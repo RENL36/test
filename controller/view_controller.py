@@ -1,3 +1,4 @@
+import pygame
 from util.map import Map
 from util.settings import Settings
 from view.base_view import BaseView
@@ -49,6 +50,7 @@ class ViewController:
         """Bascule entre la vue terminale et la vue 2.5D en appuyant sur F12."""
         if self.__is_terminal:
             self.__is_terminal = False
+            pygame.init() # Ajout de l'initialisation pour éviter l'erreur
             self.__current_view = View2_5D(self)
         else:
             self.__is_terminal = True

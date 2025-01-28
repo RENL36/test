@@ -191,7 +191,7 @@ class View2_5D(BaseView):
                     if event.key == pygame.K_ESCAPE:
                         self.running = False  # Quitter proprement
                         pygame.quit()
-                    elif event.key == pygame.K_F12:
+                    elif event.key == pygame.K_F9:
                         self.running = False
                         self.view_controller.switch_view()
 
