@@ -142,5 +142,14 @@ class AIController:
                     pass
             time.wait(1000*self.__refresh_rate)
 
+    def pause(self) -> None:
+        """
+        Pauses the AIController.
+        """
+        self.__running = False
     
-        
+    def resume(self) -> None:
+        """
+        Resumes the AIController.
+        """
+        self.__running = True

@@ -1,3 +1,17 @@
+from abc import ABC, abstractmethod
+from util.coordinate import Coordinate
+from util.map import Map
+from controller.command import Task, CollectAndDropTask, MoveTask, KillTask, SpawnTask, BuildTask, UnitSpawner
+from model.units.villager import Villager
+from model.units.unit import Unit
+from model.buildings.barracks import Barracks
+from model.buildings.farm import Farm
+from model.units.swordsman import Swordsman
+from model.buildings.town_center import TownCenter
+from model.buildings.house import House
+from model.buildings.building import Building
+from model.player.player import Player
+from model.resources.resource import Resource
 import typing
 if typing.TYPE_CHECKING:
     from controller.AI_controller import AI
@@ -41,6 +55,8 @@ class Strategy1(Strategy):
         self.__unit_difference: int = unit_difference
         self.__mode = self.DEFEND
         self.__target_player = None
+        self.__villager_task_count = 0
+  
     def execute(self): ## run every AI-loop
         self.analyse()
         if self.__mode == self.DEFEND:
@@ -74,22 +90,23 @@ class Strategy1(Strategy):
         villagers = [u for u in self.get_ai().get_player().get_units() if isinstance(u, Villager) and u.get_task() is None]
         center_coordinate = self.get_ai().get_player().get_centre_coordinate()
         build_points = self.get_ai().get_map_known().find_nearest_empty_zones(center_coordinate, TownCenter().get_size())
-        collect_points = self.get_ai().get_map_known().find_nearest_objects(center_coordinate, Resource) 
+        collect_points = self.get_ai().get_map_known().find_nearest_objects(center_coordinate, Farm) 
         for i, villager in enumerate(villagers):
-            match i% 3:
+            match self.__villager_task_count% 3:
                 case 0:
-                    if collect_points:
-                        self.collect(villager, collect_points[(i//3) % len(collect_points)])
+                    if all(self.get_ai().get_player().check_consume(resource, amount) for resource, amount in Farm().get_cost().items()) and build_points:
+                        self.build(Farm(), villager, build_points[(i//3) % len(build_points)])
+                    elif collect_points:
+                        self.collect(villager,collect_points[(i//3) % len(collect_points)])
                 case 1:
-                    if all(self.get_ai().get_player().get_resources().get(key, 0) >= cost for key, cost in House().get_cost().items()) and self.get_ai().get_player().get_unit_count() < self.get_ai().get_player().get_max_population() and build_points:
-                        self.build(House(), villager, build_points[(i//3) % len(build_points)])
+                    if all(self.get_ai().get_player().check_consume(resource, amount) for resource, amount in House().get_cost().items()) and build_points:
+                        self.build(House(), villager, build_points[(i//3) + 1 % len(build_points)])
                     elif collect_points:
                         self.collect(villager,collect_points[(i//3) % len(collect_points)])
                 case 2:
-                    if all(self.get_ai().get_player().get_resources().get(key, 0) >= cost for key, cost in Farm().get_cost().items()) and build_points:
-                        self.build(TownCenter(), villager, build_points[(i//3) + 1 % len(build_points)])
-                    elif collect_points:
+                    if collect_points:
                         self.collect(villager,collect_points[(i//3) % len(collect_points)])
+        self.__villager_task_count += 1
         self.spawnAll(TownCenter)
         self.dispatchAttackers(Swordsman)
 
@@ -97,24 +114,23 @@ class Strategy1(Strategy):
     def attack(self):
         villagers = [u for u in self.get_ai().get_player().get_units() if isinstance(u, Villager) and u.get_task() is None]
         center_coordinate = self.get_ai().get_player().get_centre_coordinate()
-        build_points = self.get_ai().get_map_known().find_nearest_empty_zones(center_coordinate, Barracks().get_size())
+        build_points = self.get_ai().get_map_known().find_nearest_empty_zones(center_coordinate, TownCenter().get_size())
         collect_points = self.get_ai().get_map_known().find_nearest_objects(center_coordinate, Resource) 
         for i, villager in enumerate(villagers):
-            match i% 3:
+            match self.__villager_task_count% 2:
                 case 0:
-                    if all(self.get_ai().get_player().get_resources().get(key, 0) >= cost for key, cost in Barracks().get_cost().items()) and build_points:
+                    if all(self.get_ai().get_player().check_consume(resource, amount) for resource, amount in Barracks().get_cost().items()) and build_points:
                         self.build(Barracks(), villager, build_points[(i//3) % len(build_points)])
+                    elif all(self.get_ai().get_player().check_consume(resource, amount) for resource, amount in Farm().get_cost().items()) and build_points:
+                        self.build(Farm(), villager, build_points[(i//3) % len(build_points)])
                     elif collect_points:
                         self.collect(villager,collect_points[(i//3) % len(collect_points)])
                 case 1:
-                    if all(self.get_ai().get_player().get_resources().get(key, 0) >= cost for key, cost in House().get_cost().items()) and build_points:
+                    if all(self.get_ai().get_player().check_consume(resource, amount) for resource, amount in Farm().get_cost().items()) and build_points:
                         self.build(House(), villager, build_points[(i//3) + 1 % len(build_points)])
                     elif collect_points:
                         self.collect(villager,collect_points[(i//3) % len(collect_points)])
-                case 2:
-                    if collect_points:
-                        self.collect(villager, collect_points[(i//3) % len(collect_points)])
-                
+        self.__villager_task_count += 1
         self.spawnAll(TownCenter)
         self.dispatchAttackers(Swordsman)
         self.spawnAll(Barracks)
