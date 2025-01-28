@@ -163,9 +163,25 @@ class View2_5D(BaseView):
 
         pygame.draw.rect(self.screen, (255, 0, 0), (viewport_x, viewport_y, viewport_width, viewport_height), 2)  # Rouge pour la position caméra
     
-    def show(self):
+    def show(self) -> None:
         """
         Main loop for the 2.5D view.
+        """
+        self.__input_loop()
+    
+    def __input_loop(self) -> None:
+        """
+        Handle the user input to move the viewport.
+
+        ZQSD or WASD or arrow keys are used to move the viewport.
+        MAJ + ZQSD or MAJ + WASD or MAJ + arrow keys are used to move the viewport by 5 cells.
+        P is used to pause the game.
+        TAB is used to pause the game and display the stats menu.
+        ECHAP is used to exit the game.
+        F9 is used to take switch view.
+        V is used to toggle speed between 1 and 60.
+
+        :return: None
         """
         while self.running:
             for event in pygame.event.get():
