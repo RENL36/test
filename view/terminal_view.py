@@ -36,13 +36,14 @@ class TerminalView(BaseView):
         self.__map: Map = self._BaseView__controller.get_map()
 
         self.__display_thread = threading.Thread(target=self.__display_loop)
-        self.__input_thread = threading.Thread(target=self.__input_loop)
+        # self.__input_thread = threading.Thread(target=self.__input_loop)
     
     def show(self) -> None:
         """Start the display and input threads."""
         self.__stop_event.clear()
         self.__display_thread.start()
-        self.__input_thread.start()
+        # self.__input_thread.start()
+        self.__input_loop()
     
     def __size(self) -> None:
         """
@@ -176,7 +177,7 @@ class TerminalView(BaseView):
         P is used to pause the game.
         TAB is used to pause the game and display the stats menu.
         ECHAP is used to exit the game.
-        F12 is used to take switch view.
+        F9 is used to take switch view.
         V is used to toggle speed between 1 and 60.
 
         :return: None
@@ -213,7 +214,8 @@ class TerminalView(BaseView):
             elif key.code == self.__terminal.KEY_ESCAPE:
                 self.exit()
                 self._BaseView__controller.exit()
-            elif key.code == self.__terminal.KEY_F12:
+            elif key.code == self.__terminal.KEY_F9:
+                self.exit()
                 self._BaseView__controller.switch_view()
             elif key.lower() == "v":
                 self._BaseView__controller.toggle_speed()
@@ -229,13 +231,14 @@ class TerminalView(BaseView):
     def resume(self):
         self.__stop_event.clear()
         self.__display_thread = threading.Thread(target=self.__display_loop)
-        self.__input_thread = threading.Thread(target=self.__input_loop)
+        # self.__input_thread = threading.Thread(target=self.__input_loop)
         self.__display_thread.start()
-        self.__input_thread.start()
+        # self.__input_thread.start()
+        self.__input_loop()
 
     def exit(self):
         self.__pause()
         if threading.current_thread() != self.__display_thread:
             self.__display_thread.join()
-        if threading.current_thread() != self.__input_thread:
-            self.__input_thread.join()
+        # if threading.current_thread() != self.__input_thread:
+        #     self.__input_thread.join()

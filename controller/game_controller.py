@@ -13,16 +13,12 @@ from controller.command import CommandManager, Command, TaskManager, BuildTask, 
 from controller.interactions import Interactions
 from controller.AI_controller import AIController, AI
 from model.player.player import Player
-from model.buildings.town_center import TownCenter
-from model.resources.wood import Wood
-from model.resources.gold import Gold
 from pygame import time
-import threading
 from model.player.strategy import Strategy1
+import threading
 import typing
 if typing.TYPE_CHECKING:
     from controller.menu_controller import MenuController
-    
 class GameController:
     """This module is responsible for controlling the game."""
     _instance = None
@@ -46,18 +42,17 @@ class GameController:
         self.__players: list[Player] = []
         self.__map: Map = self.__generate_map()
         self.__ai_controller: AIController = AIController(self,1)
-        self.__view_controller: ViewController = ViewController(self)
         self.__assign_AI()
-        # self.__ai_controller: AIController = AIController(self)
         self.__running: bool = False
         game_thread = threading.Thread(target=self.game_loop)
         ai_thread = threading.Thread(target=self.__ai_controller.ai_loop)
+        self.__view_controller: ViewController = ViewController(self)
         game_thread.start()
         ai_thread.start()
+        self.__view_controller.start_view()
         
     def get_commandlist(self):
         return self.__command_list
-
         
     def __generate_players(self, number_of_player: int, map: Map ) -> None:
         """
@@ -69,6 +64,13 @@ class GameController:
             self.get_players().append(player)
             player.set_command_manager(CommandManager(map, player, self.settings.fps.value, self.__command_list))
             player.set_task_manager(TaskManager(player.get_command_manager()))
+    
+    def __assign_AI(self)-> None:
+        for player in self.get_players():
+            player.set_ai(AI(player,None, map))
+            player.get_ai().set_strategy(Strategy1(player.get_ai(), 5))
+            # print(f"Player {player.get_name()} has strat {player.get_ai().get_strategy()}")
+            player.update_centre_coordinate()
 
             option = StartingCondition(self.settings.starting_condition)
             if option == StartingCondition.LEAN:
@@ -312,15 +314,15 @@ class GameController:
             player.get_task_manager().execute_tasks()
 
     def game_loop(self) -> None:
-            """
-            The main game loop.
-            """
-            self.start()
-            while self.__running:
-                self.load_task()
-                self.update() 
-                # Cap the loop time to ensure it doesn't run faster than the desired FPS
-                time.Clock().tick(self.settings.fps.value * self.get_speed())
+        """
+        The main game loop.
+        """
+        self.start()
+        while self.__running:
+            self.load_task()
+            self.update() 
+            # Cap the loop time to ensure it doesn't run faster than the desired FPS
+            time.Clock().tick(self.settings.fps.value * self.get_speed())
     
     def resume(self) -> None:
         """

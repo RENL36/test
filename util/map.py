@@ -403,9 +403,6 @@ class Map():
             if size ==2 and len(zone_list) > 0:
                 break
         return zone_list
-                    
-
-
     
     def find_nearest_objects(self, coordinate: Coordinate, object_type: type) -> list[Coordinate]:
         """

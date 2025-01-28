@@ -1,19 +1,22 @@
+import pygame
 from util.map import Map
 from util.settings import Settings
 from view.base_view import BaseView
+from view.view_2_5D import View2_5D
 from view.terminal_view import TerminalView
 from model.units.villager import Villager
 import os, json, typing, webbrowser
 if typing.TYPE_CHECKING:
     from controller.game_controller import GameController
+import threading
 
 class ViewController:
     def __init__(self, game_controller: 'GameController') -> None:
         """Initialize the view controller."""
+        self.__is_terminal: bool = True
         self.__game_controller: 'GameController' = game_controller
         self.__current_view: BaseView = TerminalView(self)
         self.__speed = 1  # Initialize speed
-        self.start_view()
     
     def toggle_speed(self) -> None:
         """Toggle the speed between 1 and 60."""
@@ -44,11 +47,15 @@ class ViewController:
         self.__game_controller.exit()
 
     def switch_view(self) -> None:
-        """Switch the view."""
-        if isinstance(self.__current_view, TerminalView):
-            raise NotImplementedError("There is currently only one view.")
+        """Bascule entre la vue terminale et la vue 2.5D en appuyant sur F12."""
+        if self.__is_terminal:
+            self.__is_terminal = False
+            pygame.init() # Ajout de l'initialisation pour éviter l'erreur
+            self.__current_view = View2_5D(self)
         else:
+            self.__is_terminal = True
             self.__current_view = TerminalView(self)
+        self.start_view()
 
     def generate_player_stats(self, player) -> dict:
         """
@@ -149,9 +156,9 @@ class ViewController:
             <h2>Settings</h2>
             <p>Map Size: {self.get_settings().map_size.value}</p>
             <p>Map Type: {self.get_settings().map_type}</p>
-
             <h2>Players</h2>
             {self.generate_collapsible_html(all_players_stats)}
+            <p>Task: {[unit.get_task() for unit in self.__game_controller.get_players()[0].get_units()]}</p>
         </body>
         </html>
         """
