@@ -18,7 +18,6 @@ import threading
 import typing
 if typing.TYPE_CHECKING:
     from controller.menu_controller import MenuController
-    
 class GameController:
     """This module is responsible for controlling the game."""
     _instance = None
@@ -42,13 +41,14 @@ class GameController:
         self.__players: list[Player] = []
         self.__map: Map = self.__generate_map()
         self.__ai_controller: AIController = AIController(self,1)
-        self.__view_controller: ViewController = ViewController(self)
         self.__assign_AI()
         self.__running: bool = False
         game_thread = threading.Thread(target=self.game_loop)
         ai_thread = threading.Thread(target=self.__ai_controller.ai_loop)
+        self.__view_controller: ViewController = ViewController(self)
         game_thread.start()
         ai_thread.start()
+        self.__view_controller.start_view()
         
     def get_commandlist(self):
         return self.__command_list
@@ -68,7 +68,7 @@ class GameController:
         for player in self.get_players():
             player.set_ai(AI(player,None, map))
             player.get_ai().set_strategy(Strategy1(player.get_ai(), 5))
-            print(f"Player {player.get_name()} has strat {player.get_ai().get_strategy()}")
+            # print(f"Player {player.get_name()} has strat {player.get_ai().get_strategy()}")
             player.update_centre_coordinate()
 
             option = StartingCondition(self.settings.starting_condition)
@@ -281,15 +281,15 @@ class GameController:
             player.get_task_manager().execute_tasks()
 
     def game_loop(self) -> None:
-            """
-            The main game loop.
-            """
-            self.start()
-            while self.__running:
-                self.load_task()
-                self.update() 
-                # Cap the loop time to ensure it doesn't run faster than the desired FPS
-                time.Clock().tick(self.settings.fps.value * self.get_speed())
+        """
+        The main game loop.
+        """
+        self.start()
+        while self.__running:
+            self.load_task()
+            self.update() 
+            # Cap the loop time to ensure it doesn't run faster than the desired FPS
+            time.Clock().tick(self.settings.fps.value * self.get_speed())
     
     def resume(self) -> None:
         """

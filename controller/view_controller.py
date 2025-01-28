@@ -16,7 +16,6 @@ class ViewController:
         self.__game_controller: 'GameController' = game_controller
         self.__current_view: BaseView = TerminalView(self)
         self.__speed = 1  # Initialize speed
-        self.start_view()
     
     def toggle_speed(self) -> None:
         """Toggle the speed between 1 and 60."""

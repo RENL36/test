@@ -215,6 +215,7 @@ class TerminalView(BaseView):
                 self.exit()
                 self._BaseView__controller.exit()
             elif key.code == self.__terminal.KEY_F9:
+                self.exit()
                 self._BaseView__controller.switch_view()
             elif key.lower() == "v":
                 self._BaseView__controller.toggle_speed()
@@ -230,13 +231,14 @@ class TerminalView(BaseView):
     def resume(self):
         self.__stop_event.clear()
         self.__display_thread = threading.Thread(target=self.__display_loop)
-        self.__input_thread = threading.Thread(target=self.__input_loop)
+        # self.__input_thread = threading.Thread(target=self.__input_loop)
         self.__display_thread.start()
-        self.__input_thread.start()
+        # self.__input_thread.start()
+        self.__input_loop()
 
     def exit(self):
         self.__pause()
         if threading.current_thread() != self.__display_thread:
             self.__display_thread.join()
-        if threading.current_thread() != self.__input_thread:
-            self.__input_thread.join()
+        # if threading.current_thread() != self.__input_thread:
+        #     self.__input_thread.join()
