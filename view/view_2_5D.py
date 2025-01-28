@@ -186,17 +186,18 @@ class View2_5D(BaseView):
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
+                    self.exit()
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
-                        self.running = False  # Quitter proprement
-                        pygame.quit()
+                        self.running = False
+                        self.exit()
                     elif event.key == pygame.K_F9:
                         self.running = False
+                        self.exit()
                         self._BaseView__controller.switch_view()
-                    elif event.key == pygame.K_v:
-                        self._BaseView__controller.toggle_speed()
                     elif event.key == pygame.K_TAB:
                         self.running = False
+                        self.exit()
                         self._BaseView__controller.show_stats()
                     elif event.key == pygame.K_v:
                         self._BaseView__controller.toggle_speed()
@@ -234,4 +235,9 @@ class View2_5D(BaseView):
             pygame.display.flip()
             self.clock.tick(self._BaseView__controller.get_settings().fps.value)
 
+        self.exit()
+        
+    def exit(self) -> None:
+        # Close the window
+        pygame.display.quit()
         pygame.quit()
