@@ -38,8 +38,6 @@ class View2_5D(BaseView):
         self.tile_size = 40  # Taille d'une tuile
         self.minimap_size = 150  # Taille de la mini-map
         self.minimap_pos = (self.width - self.minimap_size - 10, self.height - self.minimap_size - 10)
-
-        self.handle_event()
         
     def render_map(self):
         """
@@ -200,17 +198,3 @@ class View2_5D(BaseView):
             self.clock.tick(self._BaseView__controller.get_settings().fps.value)
 
         pygame.quit()
-
-    def handle_event(self):
-        """
-        If F9 is pressed, switch to terminal view.
-        """
-        while self.running:
-            for event in pygame.event.get():
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_F9:
-                        self.running = False
-                        self.view_controller.switch_view()
-                        return
-            pygame.display.flip()
-            self.clock.tick(self._BaseView__controller.get_settings().fps.value)

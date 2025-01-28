@@ -53,6 +53,7 @@ class ViewController:
         else:
             self.__is_terminal = True
             self.__current_view = TerminalView(self)
+        self.start_view()
 
     def generate_player_stats(self, player) -> dict:
         """
