@@ -4,7 +4,8 @@ from util.state_manager import GameState, MenuOptions
 from view.menus.load_view import LoadMenu
 from view.menus.menu_view import MenuView
 from view.menus.settings_view import SettingsMenu
-import pickle
+from datetime import datetime
+import pickle, os
 
 class MenuController:
     """Controller for all the menus in the game."""
@@ -88,7 +89,14 @@ class MenuController:
                 'players': self.__game_controller.get_players(),
             }
         try: 
-            filename = "savegame.pkl"
+            # Ensure the save directory exists
+            save_dir = "save"
+            os.makedirs(save_dir, exist_ok=True)
+
+            # Generate a timestamped filename
+            timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+            filename = os.path.join(save_dir, f"{timestamp}.pkl")
+
             with open(filename, 'wb') as file:
                 pickle.dump(game_state, file)
             print(f"Game successfully saved to {filename}.")
