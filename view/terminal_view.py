@@ -41,7 +41,9 @@ class TerminalView(BaseView):
     def show(self) -> None:
         """Start the display and input threads."""
         self.__stop_event.clear()
-        self.__display_thread.start()
+        if not self.__display_thread.is_alive():
+            self.__display_thread = threading.Thread(target=self.__display_loop)
+            self.__display_thread.start()
         # self.__input_thread.start()
         self.__input_loop()
     
@@ -203,12 +205,11 @@ class TerminalView(BaseView):
             elif key == "D":
                 self.__from_coord += Coordinate(5, 0)
             elif key in ["p", "P"]:
-                self.__pause()
+                self.exit()
                 self._BaseView__controller.pause()
-            
             elif key.code == self.__terminal.KEY_TAB:
                 # commented pause for now since it breaks
-                # self.__pause()
+                # self.exit()
                 # self._BaseView__controller.pause()
                 self._BaseView__controller.display_stats()
             elif key.code == self.__terminal.KEY_ESCAPE:
@@ -225,19 +226,8 @@ class TerminalView(BaseView):
                 max(0, min(self.__map.get_size() - self.__terminal_height + 2, self.__from_coord.get_y()))
             )
 
-    def __pause(self):
-        self.__stop_event.set()
-
-    def resume(self):
-        self.__stop_event.clear()
-        self.__display_thread = threading.Thread(target=self.__display_loop)
-        # self.__input_thread = threading.Thread(target=self.__input_loop)
-        self.__display_thread.start()
-        # self.__input_thread.start()
-        self.__input_loop()
-
     def exit(self):
-        self.__pause()
+        self.__stop_event.set()
         if threading.current_thread() != self.__display_thread:
             self.__display_thread.join()
         # if threading.current_thread() != self.__input_thread:

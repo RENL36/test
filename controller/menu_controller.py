@@ -54,11 +54,9 @@ class MenuController:
             else:
                 self.call_menu()
         elif option == MenuOptions.RESUME:
-            # TODO: Implement game resume
-            pass
+            self.__game_controller.resume()
         elif option == MenuOptions.RESTART:
-            # TODO: Implement game restart
-            pass
+            self.start_game()
         elif option == MenuOptions.SAVE_GAME:
             self.save_game()  
     
@@ -79,6 +77,16 @@ class MenuController:
         self.state = GameState.PLAYING
         self.__game_controller = GameController(self)
         pass
+    
+    def pause(self, game_controller: GameController) -> None:
+        """
+        Pauses the game.
+        
+        :rtype: None
+        """
+        self.state = GameState.PAUSED
+        self.__game_controller = game_controller
+        self.call_menu()
     
     def save_game(self) -> None:
         """Save the current game state"""

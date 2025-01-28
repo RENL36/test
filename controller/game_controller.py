@@ -271,8 +271,7 @@ class GameController:
     
     def pause(self) -> None:
         """Pauses the game."""
-        self.__running = False
-        self.__ai_controller.pause()
+        self.__menu_controller.pause(self)
     
     def exit(self) -> None:
         """Exits the game."""
@@ -333,6 +332,7 @@ class GameController:
         ai_thread = threading.Thread(target=self.__ai_controller.ai_loop)
         game_thread.start()
         ai_thread.start()
+        self.__view_controller.start_view()
     
     def load_game(self, map: Map, players: list[Player]) -> None:
         """

@@ -16,6 +16,7 @@ class ViewController:
         self.__is_terminal: bool = True
         self.__game_controller: 'GameController' = game_controller
         self.__current_view: BaseView = TerminalView(self)
+        self.__pause: bool = False
         self.__speed = 1  # Initialize speed
     
     def toggle_speed(self) -> None:
@@ -24,10 +25,11 @@ class ViewController:
 
     def get_speed(self) -> int:
         """Get the current speed."""
-        return self.__speed
+        return self.__speed if not self.__pause else 0
 
     def start_view(self) -> None:
         """Start the view."""
+        self.__pause = False
         self.__current_view.show()
 
     def get_map(self) -> Map:
@@ -40,6 +42,7 @@ class ViewController:
 
     def pause(self) -> None:
         """Pause the game."""
+        self.__pause = True
         self.__game_controller.pause()
 
     def exit(self) -> None:
