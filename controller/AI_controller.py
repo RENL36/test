@@ -133,14 +133,14 @@ class AIController:
         """
         while self.__running:
             ##print("AI loop")
-            try:  
-                for player in self.__players:
-                    self.update_knowledge()
-                for player in self.__players:  
-                        player.get_ai().get_strategy().execute()
-            except (ValueError, IndexError,AttributeError):
-                pass
-            time.wait(1000*self.__refresh_rate//(self.__game_controller.get_speed()))
+            for player in self.__players:
+                self.update_knowledge()
+            for player in self.__players:
+                try:    
+                    player.get_ai().get_strategy().execute()
+                except (ValueError, IndexError,AttributeError):
+                    pass
+            time.wait(1000*self.__refresh_rate)
 
     def pause(self) -> None:
         """
@@ -153,6 +153,3 @@ class AIController:
         Resumes the AIController.
         """
         self.__running = True
-    
-    
-        

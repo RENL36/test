@@ -15,7 +15,8 @@ from model.resources.resource import Resource
 import typing
 if typing.TYPE_CHECKING:
     from controller.AI_controller import AI
-    from model.player.player import Player
+
+
 from abc import ABC, abstractmethod
 from util.coordinate import Coordinate
 from util.map import Map
@@ -55,6 +56,7 @@ class Strategy1(Strategy):
         self.__mode = self.DEFEND
         self.__target_player = None
         self.__villager_task_count = 0
+  
     def execute(self): ## run every AI-loop
         self.analyse()
         if self.__mode == self.DEFEND:
@@ -105,7 +107,6 @@ class Strategy1(Strategy):
                     if collect_points:
                         self.collect(villager,collect_points[(i//3) % len(collect_points)])
         self.__villager_task_count += 1
-
         self.spawnAll(TownCenter)
         self.dispatchAttackers(Swordsman)
 
@@ -130,7 +131,6 @@ class Strategy1(Strategy):
                     elif collect_points:
                         self.collect(villager,collect_points[(i//3) % len(collect_points)])
         self.__villager_task_count += 1
-                
         self.spawnAll(TownCenter)
         self.dispatchAttackers(Swordsman)
         self.spawnAll(Barracks)
