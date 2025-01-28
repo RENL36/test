@@ -26,7 +26,11 @@ class LoadMenu:
         try:
             # Lister les fichiers dans le répertoire
             if os.path.exists(save_directory):
-                save_files = [f for f in os.listdir(save_directory) if os.path.isfile(os.path.join(save_directory, f))]
+                save_files = sorted(
+                    [f for f in os.listdir(save_directory) if os.path.isfile(os.path.join(save_directory, f))],
+                    key=lambda x: os.path.getmtime(os.path.join(save_directory, x)),
+                    reverse=True
+                )
                 if not save_files:
                     return ["No save files found"]
                 return save_files

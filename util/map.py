@@ -475,3 +475,14 @@ class Map():
         if isinstance(object, Entity):
             return object.get_player().get_color()
         return "white"
+    
+    def __getstate__(self):
+        # Méthode spéciale pour la sérialisation
+        state = self.__dict__.copy()
+        state['_Map__matrix'] = dict(self.__matrix)  # Convertir defaultdict en dict pour la sérialisation
+        return state
+
+    def __setstate__(self, state):
+        # Méthode spéciale pour la désérialisation
+        self.__dict__.update(state)
+        self.__matrix = defaultdict(lambda: None, state['_Map__matrix'])

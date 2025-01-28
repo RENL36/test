@@ -108,13 +108,16 @@ class MenuController:
             with open(filename, 'wb') as file:
                 pickle.dump(game_state, file)
             print(f"Game successfully saved to {filename}.")
+            self.call_menu()
         except Exception as e:
             print(f"Error saving game: {e}")
 
     def load_game(self, filename: str) -> None:
         """Load a saved game state"""
         try:
-            with open(filename, 'rb') as file:
+            save_dir = "save"
+            filepath = os.path.join(save_dir, filename)
+            with open(filepath, 'rb') as file:
                 game_state = pickle.load(file)
 
             self.settings = game_state['settings']

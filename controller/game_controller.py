@@ -85,14 +85,6 @@ class GameController:
             #     player.collect( Food(), 20000 )
             #     player.collect( Wood(), 20000 )
             #     player.collect( Gold(), 20000 )
-    
-    def __assign_AI(self)-> None:
-        for player in self.get_players():
-            player.set_ai(AI(player,None, map))
-            player.get_ai().set_strategy(Strategy1(player.get_ai(), 5))
-            print(f"Player {player.get_name()} has strat {player.get_ai().get_strategy()}")
-            player.update_centre_coordinate()
-
         
     def __generate_map(self) -> Map:
         """
