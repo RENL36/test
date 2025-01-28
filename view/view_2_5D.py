@@ -134,15 +134,14 @@ class View2_5D(BaseView):
 
         # Dessiner les objets sur la mini-map
         for coordinate, obj in self.__map.get_map().items():
-            if not coordinate or not obj: continue
-
             x, y = coordinate.get_x(), coordinate.get_y()
             pixel_x = int(minimap_x + x * scale_x)
             pixel_y = int(minimap_y + y * scale_y)
 
             # Couleurs différentes selon les objets
-            color = (255, 255, 255)  # Par défaut blanc (terrain)
-            if obj.get_letter() == "T":  # Town Center
+            if coordinate is None or obj is None:  # Case vide
+                color = (34, 139, 34)  # Par défaut blanc (terrain)
+            elif obj.get_letter() == "T":  # Town Center
                 color = (255, 215, 0)  # Or
             elif obj.get_letter() == "W":  # Bois
                 color = (139, 69, 19)  # Marron
@@ -150,7 +149,7 @@ class View2_5D(BaseView):
                 color = (255, 223, 0)  # Jaune
             elif obj.get_letter() == "F":  # Nourriture
                 color = (255, 0, 0)  # Rouge
-            elif obj.get_letter() == "v":  # Villageois
+            else:  # Unité
                 color = (0, 0, 255)  # Bleu
 
             pygame.draw.rect(self.screen, color, (pixel_x, pixel_y, 3, 3))  # Carré de 3x3 pixels
@@ -193,18 +192,40 @@ class View2_5D(BaseView):
                         pygame.quit()
                     elif event.key == pygame.K_F9:
                         self.running = False
-                        self.view_controller.switch_view()
-
-            # Gestion des déplacements de la caméra avec les flèches et touches ZQSD/WASD
-            keys = pygame.key.get_pressed()
-            if keys[pygame.K_LEFT] or keys[pygame.K_q] or keys[pygame.K_a]:  # Q, A, ou ←
-                self.camera_x = max(0, self.camera_x - self.camera_speed)
-            if keys[pygame.K_RIGHT] or keys[pygame.K_d]:  # D ou →
-                self.camera_x = min(self.map_size - self.viewport_width, self.camera_x + self.camera_speed)
-            if keys[pygame.K_UP] or keys[pygame.K_z] or keys[pygame.K_w]:  # Z, W, ou ↑
-                self.camera_y = max(0, self.camera_y - self.camera_speed)
-            if keys[pygame.K_DOWN] or keys[pygame.K_s]:  # S ou ↓
-                self.camera_y = min(self.map_size - self.viewport_height, self.camera_y + self.camera_speed)
+                        self._BaseView__controller.switch_view()
+                    elif event.key == pygame.K_v:
+                        self._BaseView__controller.toggle_speed()
+                    elif event.key == pygame.K_TAB:
+                        self.running = False
+                        self._BaseView__controller.show_stats()
+                    elif event.key == pygame.K_v:
+                        self._BaseView__controller.toggle_speed()
+                    elif event.key == pygame.K_p:
+                        self._BaseView__controller.pause()
+                    elif (event.key == pygame.K_LEFT or event.key == pygame.K_a or event.key == pygame.K_q) and pygame.key.get_mods() & pygame.KMOD_SHIFT:  # MAJ + ←
+                        self.camera_x = max(0, self.camera_x - 5)
+                        self.camera_y = min(self.map_size - self.viewport_height, self.camera_y + 5)
+                    elif event.key == pygame.K_LEFT or event.key == pygame.K_q or event.key == pygame.K_a:  # ←, Q, ou A
+                        self.camera_x = max(0, self.camera_x - 1)
+                        self.camera_y = min(self.map_size - self.viewport_height, self.camera_y + 1)
+                    elif (event.key == pygame.K_RIGHT or event.key == pygame.K_d) and pygame.key.get_mods() & pygame.KMOD_SHIFT:  # MAJ + →
+                        self.camera_x = min(self.map_size - self.viewport_width, self.camera_x + 5)
+                        self.camera_y = max(0, self.camera_y - 5)
+                    elif event.key == pygame.K_RIGHT or event.key == pygame.K_d:  # → ou D
+                        self.camera_x = min(self.map_size - self.viewport_width, self.camera_x + 1)
+                        self.camera_y = max(0, self.camera_y - 1)
+                    elif (event.key == pygame.K_UP or event.key == pygame.K_z or event.key == pygame.K_w) and pygame.key.get_mods() & pygame.KMOD_SHIFT:  # MAJ + ↑
+                        self.camera_x = max(0, self.camera_x - 5)
+                        self.camera_y = max(0, self.camera_y - 5)
+                    elif event.key == pygame.K_UP or event.key == pygame.K_z or event.key == pygame.K_w:  # ↑, Z, ou W
+                        self.camera_x = max(0, self.camera_x - 1)
+                        self.camera_y = max(0, self.camera_y - 1)
+                    elif (event.key == pygame.K_DOWN or event.key == pygame.K_s) and pygame.key.get_mods() & pygame.KMOD_SHIFT:  # MAJ + ↓
+                        self.camera_x = min(self.map_size - self.viewport_width, self.camera_x + 5)
+                        self.camera_y = min(self.map_size - self.viewport_height, self.camera_y + 5)
+                    elif event.key == pygame.K_DOWN or event.key == pygame.K_s:  # ↓ ou S
+                        self.camera_x = min(self.map_size - self.viewport_width, self.camera_x + 1)
+                        self.camera_y = min(self.map_size - self.viewport_height, self.camera_y + 1)
                                             
             # Effacer l'écran et afficher la carte mise à jour
             self.screen.fill((0, 0, 0))
