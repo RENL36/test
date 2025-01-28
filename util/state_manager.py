@@ -44,7 +44,7 @@ class StartingCondition(Enum):
     """
     LEAN = 0
     MEAN = 1
-    MARINES = 2
+    # MARINES = 2
 
 class GameState(Enum):
     """

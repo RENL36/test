@@ -4,6 +4,7 @@ from model.buildings.town_center import TownCenter
 from model.resources.food import Food
 from model.resources.wood import Wood
 from model.resources.gold import Gold
+from model.units.villager import Villager
 from util.map import Map
 from util.coordinate import Coordinate
 from util.settings import Settings
@@ -78,10 +79,10 @@ class GameController:
                 player.collect( Food(), 2000 )
                 player.collect( Wood(), 2000 )
                 player.collect( Gold(), 2000 )
-            elif option == StartingCondition.MARINES:
-                player.collect( Food(), 20000 )
-                player.collect( Wood(), 20000 )
-                player.collect( Gold(), 20000 )
+            # elif option == StartingCondition.MARINES:
+            #     player.collect( Food(), 20000 )
+            #     player.collect( Wood(), 20000 )
+            #     player.collect( Gold(), 20000 )
     
     def __assign_AI(self)-> None:
         for player in self.get_players():
@@ -134,14 +135,39 @@ class GameController:
                         break
                 first_player_coordinate = coordinate
             else:
+                # Place the town center of the second player at the opposite side of the map.
                 coordinate = Coordinate(
                     self.settings.map_size.value - 1 - first_player_coordinate.get_x() - town_center.get_size() + 1,
                     self.settings.map_size.value - 1 - first_player_coordinate.get_y() - town_center.get_size() + 1
                 )
             
+            # Place the town center and link it to the player
             interactions.place_object(town_center,coordinate)
             interactions.link_owner(player, town_center)
             player.set_max_population(player.get_max_population() + town_center.get_capacity_increase())
+
+            # Generate a list of coordinates around the town center (not inside it)
+            arround_coordinates = []
+            for x in range(coordinate.get_x() - 1, coordinate.get_x() + town_center.get_size()):
+                for y in range(coordinate.get_y() - 1, coordinate.get_y() + town_center.get_size()):
+                    if x < 0 or y < 0 or x >= self.settings.map_size.value or y >= self.settings.map_size.value:
+                        continue
+                    if x < coordinate.get_x() or x >= coordinate.get_x() + town_center.get_size() or y < coordinate.get_y() or y >= coordinate.get_y() + town_center.get_size():
+                        arround_coordinates.append(Coordinate(x, y))
+
+            # Place 3 villagers for each player, at random positions around the town center
+            for _ in range(3):
+                villager = Villager()
+                # Get a random coordinate from the list and check placement
+                while True:
+                    coordinate = arround_coordinates.pop(random.randint(0, len(arround_coordinates) - 1))
+                    if map_generation.check_placement(villager, coordinate):
+                        break
+                
+                # Place the villager and link it to the player
+                interactions.place_object(villager, coordinate)
+                interactions.link_owner(player, villager)
+
 
         if MapType(self.settings.map_type) == MapType.RICH:
             # Wood need to occupe 5% of the map. It will be randomly placed
@@ -195,7 +221,6 @@ class GameController:
         
         if MapType(self.settings.map_type) == MapType.TEST:
             # Generate a test map 10x10 with a town center at (0,0) and a villager at (5,5)
-            from model.units.villager import Villager
             map_generation = Map(120)
             interactions = Interactions(map_generation)
             self.__generate_players(2, map_generation) ## always in the creation of a new map, the players are generated before all generation of objects
