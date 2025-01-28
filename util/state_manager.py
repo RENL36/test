@@ -23,6 +23,8 @@ class MapSize(Enum):
     :cvar SMALL: Represents the small map size of 120x120.
     """
     SMALL = 120
+    MEDIUM = 240
+    LARGE = 480
 
 class StartingCondition(Enum):
     """
