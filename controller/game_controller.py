@@ -306,4 +306,16 @@ class GameController:
         ai_thread = threading.Thread(target=self.__ai_controller.ai_loop)
         game_thread.start()
         ai_thread.start()
-            
+    
+    def load_game(self, map: Map, players: list[Player]) -> None:
+        """
+        Load the game with the given map, players and settings.
+
+        :param map: The map.
+        :type map: Map
+        :param players: The players.
+        :type players: list[Player]
+        """
+        self.__map = map
+        self.__players = players
+        self.__running = True

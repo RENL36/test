@@ -191,6 +191,8 @@ class TerminalView(BaseView):
                 self.__from_coord += Coordinate(-1, 0)
             elif key == "d" or key.code == self.__terminal.KEY_RIGHT:
                 self.__from_coord += Coordinate(1, 0)
+            elif key in ["U", "u"]:  # Sauvegarde
+                self._BaseView__controller.save_game()
             elif key in ["Z", "W"]:
                 self.__from_coord += Coordinate(0, -5)
             elif key == "S":
@@ -202,6 +204,7 @@ class TerminalView(BaseView):
             elif key in ["p", "P"]:
                 self.__pause()
                 self._BaseView__controller.pause()
+            
             elif key.code == self.__terminal.KEY_TAB:
                 # commented pause for now since it breaks
                 # self.__pause()
