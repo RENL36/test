@@ -15,7 +15,6 @@ class View2_5D(BaseView):
         """Initialize the menu view."""
         super().__init__(controller)
         self.__map: Map = self._BaseView__controller.get_map()
-
         # Initialisation de Pygame
         pygame.init()
         super().__init__(controller)
@@ -131,7 +130,6 @@ class View2_5D(BaseView):
         # Échelle de réduction pour que la carte entière tienne dans la mini-map
         scale_x = minimap_width / self.map_size
         scale_y = minimap_height / self.map_size
-
         # Dessiner les objets sur la mini-map
         for coordinate, obj in self.__map.get_map().items():
             x, y = coordinate.get_x(), coordinate.get_y()
