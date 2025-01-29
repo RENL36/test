@@ -153,3 +153,10 @@ class AIController:
         Resumes the AIController.
         """
         self.__running = True
+    
+    def load(self, game_controller: 'GameController') -> None:
+        """
+        Loads the AIController.
+        """
+        self.__game_controller = game_controller
+        self.__players = self.__game_controller.get_players()

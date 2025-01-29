@@ -29,28 +29,50 @@ class GameController:
             GameController._instance = GameController(menu_controller)
         return GameController._instance
 
-    def __init__(self, menu_controller: 'MenuController') -> None:
+    def __init__(self, menu_controller: 'MenuController', load: bool = False) -> None:
         """
         Initializes the GameController with the given settings.
 
         :param menu_controller: The menu controller.
         :type menu_controller: MenuController
         """
-        self.__menu_controller: 'MenuController' = menu_controller
-        self.settings: Settings = self.__menu_controller.settings
-        self.__command_list: list[Command] = []
-        self.__players: list[Player] = []
-        self.__map: Map = self.__generate_map()
-        self.__ai_controller: AIController = AIController(self,1)
-        self.__assign_AI()
-        self.__running: bool = False
-        game_thread = threading.Thread(target=self.game_loop)
-        ai_thread = threading.Thread(target=self.__ai_controller.ai_loop)
+        if not load:
+            self.__menu_controller: 'MenuController' = menu_controller
+            self.settings: Settings = self.__menu_controller.settings
+            self.__command_list: list[Command] = []
+            self.__players: list[Player] = []
+            self.__map: Map = self.__generate_map()
+            self.__ai_controller: AIController = AIController(self,1)
+            self.__assign_AI()
+            self.__running: bool = False
+            self.__game_thread = threading.Thread(target=self.game_loop)
+            self.__ai_thread = threading.Thread(target=self.__ai_controller.ai_loop)
+            self.__view_controller: ViewController = ViewController(self)
+            self.__game_thread.start()
+            self.__ai_thread.start()
+            self.__view_controller.start_view()
+        else:
+            self.__menu_controller: 'MenuController' = menu_controller
+            self.settings: Settings = self.__menu_controller.settings
+            self.__command_list: list[Command] = []
+            self.__players: list[Player] = []
+            self.__map: Map = self.__generate_map()
+            self.__ai_controller: AIController = AIController(self,1)
+            self.__assign_AI()
+            self.__running: bool = False
+            self.__ai_thread = None
+            self.__view_controller = None
+            self.__game_thread = None
+            
+
+    def start_all_threads(self):
+        self.__game_thread = threading.Thread(target=self.game_loop)
+        self.__ai_thread = threading.Thread(target=self.__ai_controller.ai_loop)
         self.__view_controller: ViewController = ViewController(self)
-        game_thread.start()
-        ai_thread.start()
+        self.__game_thread.start()
+        self.__ai_thread.start()
         self.__view_controller.start_view()
-        
+    
     def get_commandlist(self):
         return self.__command_list
         
@@ -326,7 +348,7 @@ class GameController:
         ai_thread.start()
         self.__view_controller.start_view()
     
-    def load_game(self, map: Map, players: list[Player]) -> None:
+    def load_game(self, map: Map, players: list[Player], command_list: list[Command]) -> None:
         """
         Load the game with the given map, players and settings.
 
@@ -338,3 +360,5 @@ class GameController:
         self.__map = map
         self.__players = players
         self.__running = True
+        self.__command_list = command_list
+        self.__ai_controller.load(self)

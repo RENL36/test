@@ -95,6 +95,7 @@ class MenuController:
                 'settings': self.settings,
                 'map': self.__game_controller.get_map(),
                 'players': self.__game_controller.get_players(),
+                'command_list': self.__game_controller.get_commandlist()
             }
         try: 
             # Ensure the save directory exists
@@ -121,9 +122,10 @@ class MenuController:
                 game_state = pickle.load(file)
 
             self.settings = game_state['settings']
-            self.__game_controller = GameController(self)
-            self.__game_controller.load_game(game_state['map'], game_state['players'])
+            self.__game_controller = GameController(self, True)
+            self.__game_controller.load_game(game_state['map'], game_state['players'], game_state['command_list'])
             self.state = GameState.PLAYING
+            self.__game_controller.start_all_threads()
             print("Game successfully loaded.")
         except FileNotFoundError:
             print(f"Save file not found.")
