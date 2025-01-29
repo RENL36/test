@@ -283,16 +283,11 @@ class GameController:
         """Starts the game."""
         self.__running = True
     
-    def pause(self) -> None:
-        """Pauses the game."""
-        self.__menu_controller.pause(self)
-    
     def exit(self) -> None:
         """Exits the game."""
         self.__running = False
         self.__ai_controller.exit()
         self.__menu_controller.exit()
-
 
     def get_speed(self) -> int:
         """Get the current speed."""
@@ -342,10 +337,12 @@ class GameController:
         Resumes the game.
         """
         self.start()
-        game_thread = threading.Thread(target=self.game_loop)
-        ai_thread = threading.Thread(target=self.__ai_controller.ai_loop)
-        game_thread.start()
-        ai_thread.start()
+        if not self.game_thread.is_alive():
+            self.game_thread = threading.Thread(target=self.game_loop)
+            self.game_thread.start()
+        if not self.ai_thread.is_alive():
+            self.ai_thread = threading.Thread(target=self.__ai_controller.ai_loop)
+            self.ai_thread.start()
         self.__view_controller.start_view()
     
     def load_game(self, map: Map, players: list[Player], command_list: list[Command]) -> None:
