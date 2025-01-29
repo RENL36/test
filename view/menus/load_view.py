@@ -27,8 +27,8 @@ class LoadMenu:
             # Lister les fichiers dans le répertoire
             if os.path.exists(save_directory):
                 save_files = sorted(
-                    [f for f in os.listdir(save_directory) if os.path.isfile(os.path.join(save_directory, f))],
-                    key=lambda x: os.path.getmtime(os.path.join(save_directory, x)),
+                    [os.path.splitext(f)[0] for f in os.listdir(save_directory) if os.path.isfile(os.path.join(save_directory, f))],
+                    key=lambda x: os.path.getmtime(os.path.join(save_directory, x + ".pkl")),
                     reverse=True
                 )
                 if not save_files:
