@@ -54,7 +54,7 @@ class MenuController:
             else:
                 self.call_menu()
         elif option == MenuOptions.RESUME:
-            self.__game_controller.resume()
+            self.resume()
         elif option == MenuOptions.RESTART:
             self.start_game()
         elif option == MenuOptions.SAVE_GAME:
@@ -87,6 +87,13 @@ class MenuController:
         self.state = GameState.PAUSED
         self.__game_controller = game_controller
         self.call_menu()
+    
+    def resume(self) -> None:
+        """
+        Resumes the game.
+        """
+        self.state = GameState.PLAYING
+        self.__game_controller.resume()
     
     def save_game(self) -> None:
         """Save the current game state"""
