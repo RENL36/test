@@ -25,7 +25,7 @@ class SettingsMenu:
         :param option: The option to be toggled.
         :type option: str
         """
-        if option == "Map Type":
+        if option == "Map Type" and self.settings.map_type != MapType.TEST:
             current_index = list(MapType).index(self.settings.map_type)
             new_index = (current_index + 1) % len(MapType)
             self.settings.map_type = list(MapType)[new_index]

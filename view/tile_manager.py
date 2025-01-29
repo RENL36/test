@@ -26,7 +26,8 @@ class TileManager:
             "barracks": pygame.transform.scale(pygame.image.load("src/secondage_barracks.png"), (64, 64)),
             "stable": pygame.transform.scale(pygame.image.load("src/stable.png"), (64, 64)),
             "archery_range": pygame.transform.scale(pygame.image.load("src/secondage_archery.png"), (64, 64)),
-            "keep": pygame.transform.scale(pygame.image.load("src/keep.png"), (64, 64))
+            "keep": pygame.transform.scale(pygame.image.load("src/keep.png"), (64, 64)),
+            "construction": pygame.transform.scale(pygame.image.load("src/construction.png"), (32, 32)),
         }
 
     def get_texture(self, texture_name):

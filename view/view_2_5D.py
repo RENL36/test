@@ -19,13 +19,11 @@ class View2_5D(BaseView):
         # Initialisation de Pygame
         pygame.init()
         super().__init__(controller)
-        self.width = 1920
-        self.height = 1080
-        self.screen = pygame.display.set_mode((self.width, self.height), pygame.RESIZABLE)
-        # self.screen = pygame.display.set_mode((self.width, self.height), pygame.RESIZABLE | pygame.FULLSCREEN)
+        self.width, self.height = pygame.display.Info().current_w, pygame.display.Info().current_h
+        self.screen = pygame.display.set_mode((self.width, self.height), pygame.RESIZABLE | pygame.FULLSCREEN)
         pygame.display.set_caption("2.5D View")
         self.clock = pygame.time.Clock()
-        self.running = True
+        self.__running = True
         self.tile_manager = TileManager()    
         self.camera_x = 0
         self.camera_y = 0
@@ -43,7 +41,7 @@ class View2_5D(BaseView):
         """
         Render only the visible part of the map using the camera.
         """
-        town_centre = False
+        if not self.__running: return
 
         # Chargement de la texture du sol
         grass_block = pygame.transform.scale(pygame.image.load("src/block_aoe.png"), (128, 128))
@@ -65,12 +63,8 @@ class View2_5D(BaseView):
             iso_x = (x - self.camera_x) * self.tile_size - (y - self.camera_y) * self.tile_size + self.width // 2
             iso_y = (x - self.camera_x) * (self.tile_size // 2) + (y - self.camera_y) * (self.tile_size // 2) + self.height // 4
 
-            if obj.get_letter() == "T" and not town_centre:
-                self.screen.blit(
-                    pygame.transform.scale(pygame.image.load("src/town_center.png"), (256, 256)),
-                    (iso_x, iso_y)
-                )
-                town_centre = True
+            if obj.get_letter() == "T":
+                self.screen.blit(self.tile_manager.get_texture('town_center'), (iso_x, iso_y))
 
             elif obj.get_letter() == "v":
                 self.screen.blit(self.tile_manager.get_texture('villager'), (iso_x, iso_y))
@@ -110,6 +104,10 @@ class View2_5D(BaseView):
 
             elif obj.get_letter() == "G":
                 self.screen.blit(self.tile_manager.get_texture("gold"), (iso_x, iso_y))
+            
+            elif obj.get_letter() == "x":
+                # Add a "🚧" (emoji) to show that something is under construction here
+                self.screen.blit(self.tile_manager.get_texture("construction"), (iso_x, iso_y))
                 
             # self.renderer.render_tile(x, y, texture, self.camera)
     
@@ -118,6 +116,8 @@ class View2_5D(BaseView):
         Render a minimap in the bottom-right corner of the screen.
         It shows the entire map with a rectangle indicating the visible area.
         """
+        if not self.__running: return
+
         # Définition de la taille et de la position de la mini-map
         minimap_width = 200
         minimap_height = 200
@@ -182,27 +182,39 @@ class View2_5D(BaseView):
 
         :return: None
         """
-        while self.running:
+        while self.__running:
+            # Effacer l'écran et afficher la carte mise à jour
+            self.screen.fill((0, 0, 0))
+            self.render_map()
+            self.render_minimap()
+            pygame.display.flip()
+            self.clock.tick(self._BaseView__controller.get_settings().fps.value)
+
+            # Gestion des événements
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    self.running = False
                     self.exit()
+                    self._BaseView__controller.exit()
+                    return
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
-                        self.running = False
                         self.exit()
+                        self._BaseView__controller.exit()
+                        return
                     elif event.key == pygame.K_F9:
-                        self.running = False
                         self.exit()
                         self._BaseView__controller.switch_view()
+                        return
                     elif event.key == pygame.K_TAB:
-                        self.running = False
                         self.exit()
                         self._BaseView__controller.show_stats()
+                        return
                     elif event.key == pygame.K_v:
                         self._BaseView__controller.toggle_speed()
                     elif event.key == pygame.K_p:
+                        self.exit()
                         self._BaseView__controller.pause()
+                        return
                     elif (event.key == pygame.K_LEFT or event.key == pygame.K_a or event.key == pygame.K_q) and pygame.key.get_mods() & pygame.KMOD_SHIFT:  # MAJ + ←
                         self.camera_x = max(0, self.camera_x - 5)
                         self.camera_y = min(self.map_size - self.viewport_height, self.camera_y + 5)
@@ -227,17 +239,11 @@ class View2_5D(BaseView):
                     elif event.key == pygame.K_DOWN or event.key == pygame.K_s:  # ↓ ou S
                         self.camera_x = min(self.map_size - self.viewport_width, self.camera_x + 1)
                         self.camera_y = min(self.map_size - self.viewport_height, self.camera_y + 1)
-                                            
-            # Effacer l'écran et afficher la carte mise à jour
-            self.screen.fill((0, 0, 0))
-            self.render_map()
-            self.render_minimap()
-            pygame.display.flip()
-            self.clock.tick(self._BaseView__controller.get_settings().fps.value)
 
         self.exit()
         
     def exit(self) -> None:
         # Close the window
+        self.__running = False
         pygame.display.quit()
         pygame.quit()
