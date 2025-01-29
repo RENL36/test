@@ -37,6 +37,7 @@ class TerminalView(BaseView):
 
         self.__display_thread = threading.Thread(target=self.__display_loop)
         # self.__input_thread = threading.Thread(target=self.__input_loop)
+        self.__isFaster = False
     
     def show(self) -> None:
         """Start the display and input threads."""
@@ -133,12 +134,23 @@ class TerminalView(BaseView):
         """
         Add the top left coordinate on the top left corner of the frame.
         Add the bottom right coordinate on the bottom right corner of the frame.
+        Append 'x1' or 'x60' based on the value of self.__isFaster.
         """
+        # Coordinates
         top_left = f"({self.__from_coord.get_x()}, {self.__from_coord.get_y()})"
         bottom_right_coord = self.__to_coord - 1
         bottom_right = f"({bottom_right_coord.get_x()}, {bottom_right_coord.get_y()})"
+        
+        # Determine speed factor based on self.__isFaster
+        speed_factor = "x60" if self.__isFaster else "x1"
+        
+        # Add the speed factor to the coordinates
+        top_left = f"{top_left} {speed_factor}"
+        
+        # Update the top-left and bottom-right coordinates in the line
         line[0] = f"{top_left}{line[0][len(top_left):]}"
         line[-1] = f"{line[-1][:len(line[-1]) - len(bottom_right)]}{bottom_right}"
+
         return line
 
     def __display_loop(self) -> None:
@@ -220,6 +232,10 @@ class TerminalView(BaseView):
                 self._BaseView__controller.switch_view()
             elif key.lower() == "v":
                 self._BaseView__controller.toggle_speed()
+                if self.__isFaster == False:
+                    self.__isFaster = True
+                else:
+                    self.__isFaster = False
 
             self.__from_coord = Coordinate(
                 max(0, min(self.__map.get_size() - self.__terminal_width + 2, self.__from_coord.get_x())),
