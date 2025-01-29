@@ -87,6 +87,7 @@ class ViewController:
                     } if isinstance(unit, Villager) else None,
                     "inventory_size": getattr(unit, "_Villager__inventory_size", None) if isinstance(unit, Villager) else None,
                     "collect_time_per_minute": getattr(unit, "_Villager__collect_time_per_minute", None) if isinstance(unit, Villager) else None,
+                    "task" : str(unit.get_task())
                 }
                 for unit in player.get_units()
             ],
@@ -98,6 +99,7 @@ class ViewController:
                     "cost": {
                         type(resource).__name__: amount for resource, amount in building.get_cost().items()
                     },
+                    "building" : str(building.get_task())
                 }
                 for building in player.get_buildings()
             ],
