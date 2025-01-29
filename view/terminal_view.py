@@ -220,10 +220,9 @@ class TerminalView(BaseView):
                 self.exit()
                 self._BaseView__controller.pause()
             elif key.code == self.__terminal.KEY_TAB:
-                # commented pause for now since it breaks
-                # self.exit()
-                # self._BaseView__controller.pause()
+                self.exit()
                 self._BaseView__controller.display_stats()
+                self._BaseView__controller.pause()
             elif key.code == self.__terminal.KEY_ESCAPE:
                 self.exit()
                 self._BaseView__controller.exit()
