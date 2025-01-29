@@ -90,7 +90,7 @@ class Strategy1(Strategy):
         villagers = [u for u in self.get_ai().get_player().get_units() if isinstance(u, Villager) and u.get_task() is None]
         center_coordinate = self.get_ai().get_player().get_centre_coordinate()
         build_points = self.get_ai().get_map_known().find_nearest_empty_zones(center_coordinate, TownCenter().get_size())
-        collect_points = self.get_ai().get_map_known().find_nearest_objects(center_coordinate, Farm) 
+        collect_points = self.get_ai().get_map_known().find_nearest_objects(center_coordinate, Resource) 
         for i, villager in enumerate(villagers):
             match self.__villager_task_count% 3:
                 case 0:
