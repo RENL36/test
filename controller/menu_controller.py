@@ -66,6 +66,8 @@ class MenuController:
         
         :rtype: None
         """
+        if self.__game_controller:
+            self.__game_controller.exit()
         exit(0)
 
     def start_game(self) -> None:

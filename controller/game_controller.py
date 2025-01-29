@@ -261,6 +261,10 @@ class GameController:
             interactions.link_owner(self.get_players()[1], villager2)
         return map_generation
     
+    def pause(self) -> None:
+        """Pauses the game."""
+        self.__menu_controller.pause(self)
+    
     ## question: what to do if a max_population_increase building is destroyed and the population cap is decreased and become lower than the current unit count?
     ## possible solution: ban the creation of new units until the population is lower than the new cap but not kill the units already created
     def get_map(self) -> Map:
