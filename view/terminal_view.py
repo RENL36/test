@@ -142,7 +142,7 @@ class TerminalView(BaseView):
         bottom_right = f"({bottom_right_coord.get_x()}, {bottom_right_coord.get_y()})"
         
         # Determine speed factor based on self.__isFaster
-        speed_factor = "x60" if self.__isFaster else "x1"
+        speed_factor = "x5" if self.__isFaster else "x1"
         
         # Add the speed factor to the coordinates
         top_left = f"{top_left} {speed_factor}"
