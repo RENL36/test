@@ -341,12 +341,12 @@ class GameController:
         Resumes the game.
         """
         self.start()
-        if not self.game_thread.is_alive():
-            self.game_thread = threading.Thread(target=self.game_loop)
-            self.game_thread.start()
-        if not self.ai_thread.is_alive():
-            self.ai_thread = threading.Thread(target=self.__ai_controller.ai_loop)
-            self.ai_thread.start()
+        if not self.__game_thread.is_alive():
+            self.__game_thread = threading.Thread(target=self.game_loop)
+            self.__game_thread.start()
+        if not self.__ai_thread.is_alive():
+            self.__ai_thread = threading.Thread(target=self.__ai_controller.ai_loop)
+            self.__ai_thread.start()
         self.__view_controller.start_view()
     
     def load_game(self, map: Map, players: list[Player], command_list: list[Command]) -> None:
