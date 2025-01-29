@@ -140,7 +140,8 @@ class AIController:
                     player.get_ai().get_strategy().execute()
                 except (ValueError, IndexError,AttributeError):
                     pass
-            time.wait(1000*self.__refresh_rate//self.__game_controller.get_speed())
+            if self.__game_controller.get_speed() != 0:
+                time.wait(1000*self.__refresh_rate//self.__game_controller.get_speed())
 
     def pause(self) -> None:
         """
