@@ -475,7 +475,7 @@ class CommandManager:
         elif process == Process.BUILD:
             return BuildCommand(self.__map, self.__player, entity, building, target_coord, self.__convert_coeff, self.__command_list)
     
-class Task:
+class Task(ABC):
     def __init__(self,command_manager: CommandManager,  entity: Entity, target_coord: Coordinate) -> None:
         """
         Initializes the task with the given command_manager, entity and target_coord.
@@ -491,6 +491,7 @@ class Task:
         self.__command_manager : CommandManager = command_manager
         self.__waiting: bool = False
         self.__name: str = ""
+    @abstractmethod
     def get_name(self) -> str:
         """
         Returns the name of the task.
@@ -499,7 +500,7 @@ class Task:
         """
         return self.__name
     def __repr__(self):
-        return f"{self.get_entity()} of {self.get_entity().get_player()} have {self.get_name()}. Target {self.__target_coord}, status: {self.get_waiting()} ///////"
+        return f"{self.get_name()}. Target {self.__target_coord}"
 
     @abstractmethod
     def execute_task(self):
@@ -576,7 +577,13 @@ class MoveTask(Task):
         self.__step: int = 0
         self.__command: Command = None
         self.__name : str = "MoveTask"
-
+    def get_name(self) -> str:
+        """
+        Returns the name of the task.
+        :return: The name of the task.
+        :rtype: str
+        """
+        return self.__name
     
     def execute_task(self):
         """
@@ -610,6 +617,13 @@ class KillTask(Task):
         self.__command: Command = None
         self.__name : str = "KillTask"
         
+    def get_name(self) -> str:
+        """
+        Returns the name of the task.
+        :return: The name of the task.
+        :rtype: str
+        """
+        return self.__name
     
     def execute_task(self):
         """
@@ -655,6 +669,14 @@ class CollectAndDropTask(Task):
         self.__target_resource: Resource = self.get_command_manager().get_map().get(self.get_target_coord()) if isinstance(self.get_command_manager().get_map().get(self.get_target_coord()), Resource) else self.get_command_manager().get_map().get(self.get_target_coord()).get_food()
         self.__command: Command = None
         self.__name : str = "CollectAndDropTask"
+    
+    def get_name(self) -> str:
+        """
+        Returns the name of the task.
+        :return: The name of the task.
+        :rtype: str
+        """
+        return self.__name
     
     def calculate_path(self):
         """
@@ -711,6 +733,14 @@ class BuildTask(Task):
         self.__command: Command = None
         self.__name : str = "BuildTask"
     
+    def get_name(self) -> str:
+        """
+        Returns the name of the task.
+        :return: The name of the task.
+        :rtype: str
+        """
+        return self.__name
+    
     def execute_task(self):
         """
         Execute the build task.
@@ -739,6 +769,14 @@ class SpawnTask(Task):
         super().__init__(command_manager, building, target_coord)
         self.__name : str = "SpawnTask"
         self.__command: Command = None
+    
+    def get_name(self) -> str:
+        """
+        Returns the name of the task.
+        :return: The name of the task.
+        :rtype: str
+        """
+        return self.__name
     
     def execute_task(self):
         if not self.get_waiting():
