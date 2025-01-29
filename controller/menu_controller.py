@@ -126,7 +126,7 @@ class MenuController:
         """Load a saved game state"""
         try:
             save_dir = "save"
-            filepath = os.path.join(save_dir, filename)
+            filepath = os.path.join(save_dir, filename + ".pkl")
             with open(filepath, 'rb') as file:
                 game_state = pickle.load(file)
 
