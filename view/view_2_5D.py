@@ -15,20 +15,15 @@ class View2_5D(BaseView):
         """Initialize the menu view."""
         super().__init__(controller)
         self.__map: Map = self._BaseView__controller.get_map()
-        # Initialisation de Pygame
-        pygame.init()
-        super().__init__(controller)
-        self.width, self.height = pygame.display.Info().current_w, pygame.display.Info().current_h
-        self.screen = pygame.display.set_mode((self.width, self.height), pygame.RESIZABLE | pygame.FULLSCREEN)
-        pygame.display.set_caption("2.5D View")
-        self.clock = pygame.time.Clock()
-        self.__running = True
-        self.tile_manager = TileManager()    
+        self.__running: bool = False
+
+        self.width, self.height = 0, 0
         self.camera_x = 0
         self.camera_y = 0
         self.camera_speed = 2  # Vitesse de déplacement de la caméra
         self.viewport_width = 20  # Nombre de tuiles affichées horizontalement
         self.viewport_height = 15  # Nombre de tuiles affichées verticalement
+        self.tile_manager = TileManager()
         
         # Taille de la carte (en tuiles)
         self.map_size = self.__map.get_size()
@@ -164,6 +159,14 @@ class View2_5D(BaseView):
         """
         Main loop for the 2.5D view.
         """
+        # Initialisation de Pygame
+        pygame.init()
+        self.width, self.height = pygame.display.Info().current_w, pygame.display.Info().current_h
+        self.screen = pygame.display.set_mode((self.width, self.height), pygame.RESIZABLE | pygame.FULLSCREEN)
+        pygame.display.set_caption("2.5D View")
+        self.clock = pygame.time.Clock()
+        self.__running = True
+        
         self.__input_loop()
     
     def __input_loop(self) -> None:
