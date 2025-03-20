@@ -1,26 +1,30 @@
 from util.coordinate import Coordinate
 
 class GameObject:
-    """This class represents an object in the game."""
-    
+    object_counter = {}  # Dictionnaire pour suivre le nombre d'instances par type
+
     def __init__(self, name: str, letter: str, hp: int):
         """
-        Initializes a game object.
+        Initialise un objet de jeu avec un nom unique.
 
-        :param name: The name of the game object.
-        :type name: str
-        :param letter: The letter representing the game object.
-        :type letter: str
-        :param hp: The hit points of the game object.
-        :type hp: int
+        :param name: Le nom du type d'objet (ex: "Villager", "Soldier").
+        :param letter: Lettre représentant l'objet.
+        :param hp: Points de vie de l'objet.
         """
-        self.__name: str = name
+        if name not in GameObject.object_counter:
+            GameObject.object_counter[name] = 0  # Initialise le compteur
+
+        unique_id = GameObject.object_counter[name]
+        GameObject.object_counter[name] += 1  # Incrémente le compteur
+
+        self.__name: str = f"{name}{unique_id}"  # Génère un nom unique (ex: "Villager0")
         self.__letter: str = letter
         self.__hp: int = hp
         self.__coordinate: Coordinate = None
         self.__alive: bool = True
         self.__size: int = 1
         self.__sprite_path: str = None
+    
     
     def get_name(self) -> str:
         """
