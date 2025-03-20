@@ -9,7 +9,7 @@ from util.map import Map
 from util.coordinate import Coordinate
 from util.settings import Settings
 from util.state_manager import MapType, StartingCondition
-from controller.command import CommandManager, Command, TaskManager, BuildTask, MoveTask, CollectAndDropTask, SpawnCommand
+from controller.command import CommandManager, Command, TaskManager, BuildTask, MoveCommand, Process, MoveTask, CollectAndDropTask, SpawnCommand
 from controller.interactions import Interactions
 from controller.AI_controller import AIController, AI
 from model.player.player import Player
@@ -17,6 +17,8 @@ from pygame import time
 from model.player.strategy import Strategy1
 import threading
 import typing
+import socket
+import re  # Pour analyser les commandes réseau
 if typing.TYPE_CHECKING:
     from controller.menu_controller import MenuController
 class GameController:
@@ -47,9 +49,11 @@ class GameController:
             self.__running: bool = False
             self.__game_thread = threading.Thread(target=self.game_loop)
             self.__ai_thread = threading.Thread(target=self.__ai_controller.ai_loop)
+            self.__network_thread = threading.Thread(target=self.network_loop, daemon=True)
             self.__view_controller: ViewController = ViewController(self)
             self.__game_thread.start()
             self.__ai_thread.start()
+            self.__network_thread.start()
             self.__view_controller.start_view()
         else:
             self.__menu_controller: 'MenuController' = menu_controller
@@ -63,7 +67,52 @@ class GameController:
             self.__ai_thread = None
             self.__view_controller = None
             self.__game_thread = None
-            
+
+    def network_loop(self):
+        """Boucle réseau : écoute et traite les messages."""
+        host = '0.0.0.0'
+        port = 12345
+
+        server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        server_socket.bind((host, port))
+        server_socket.listen(5)
+        print(f"Serveur en écoute sur {host}:{port}")
+
+        while self.__running:
+            try:
+                server_socket.settimeout(1.0)
+                client_socket, addr = server_socket.accept()
+                data = client_socket.recv(1024).decode('utf-8')
+                if data:
+                    print(f"Reçu : {data}")
+                    self.process_network_data(data)
+                client_socket.close()
+            except socket.timeout:
+                continue
+
+        server_socket.close()  
+
+    def process_network_data(self, data: str):
+        """Analyse et exécute une commande réseau reçue."""
+        match = re.match(r"mov (\w+) \((\d+),(\d+)\)", data.strip())
+
+        if match:
+            unit_id, x, y = match.groups()
+            x, y = int(x), int(y)
+
+            for player in self.__players:
+                for unit in player.get_units():
+                    if unit.get_name() == unit_id:  # Vérifie si c'est la bonne unité
+                        print(f"Déplacement de {unit_id} vers ({x}, {y})")
+                        target_coord = Coordinate(x, y)
+                        command = MoveCommand(self.__map, player, unit, target_coord, self.settings.fps.value, self.__command_list)
+                        player.get_command_manager().execute_network_command(command)
+                        return
+            print(f"Erreur: Unité {unit_id} introuvable.")
+        else:
+            print(f"Commande réseau invalide: {data}")
+              
 
     def start_all_threads(self):
         self.__game_thread = threading.Thread(target=self.game_loop)
