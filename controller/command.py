@@ -450,6 +450,11 @@ class CommandManager:
     def get_player(self) -> Player:
         return self.__player
     
+    def execute_network_command(self, command: Command):
+        """Ajoute une commande réseau et l'exécute immédiatement."""
+        print(f"Ajout de la commande réseau : {command}")
+        self.__command_list.append(command)
+    
     def command(self, entity: Entity, process: Process, target_coord: Coordinate, building: Building = None ) -> Command:
         """
         Creates a command with the given entity, process and target coordinate.
